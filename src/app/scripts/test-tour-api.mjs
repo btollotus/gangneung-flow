@@ -8,7 +8,7 @@ if (!serviceKey) {
   process.exit(1);
 }
 
-const KEYWORD = "경포대"; // 테스트할 장소명 1곳
+const KEYWORD = "경포"; // 테스트할 장소명 1곳 (범위 넓혀서 재검색)
 
 // 주의: serviceKey는 이미 Encoding된 값이므로 URLSearchParams를 쓰지 않고
 // 직접 문자열로 붙인다 (이중 인코딩 방지)
