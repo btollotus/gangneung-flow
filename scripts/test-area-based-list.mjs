@@ -16,7 +16,6 @@ const url =
   `&sigunguCode=1` +
   `&numOfRows=200` +
   `&pageNo=1` +
-  `&listYN=Y` +
   `&arrange=A`;
 
 console.log("요청 URL:", url.replace(serviceKey, "***KEY***"));
