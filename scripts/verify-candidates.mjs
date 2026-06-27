@@ -17,8 +17,19 @@ if (!serviceKey) {
 // seedLat/seedLon: places_seed_33.sql에 들어간 원래 좌표
 // candidates: 1차 스캔(scan-area-codes.mjs)에서 나온 후보들
 const PLACES = [
-  {
-    name: "선교장",
+    {
+      name: "오죽헌",
+      seedLat: 37.7792353,
+      seedLon: 128.8775226,
+      candidates: [
+        { contentid: "129784", label: "강릉 오죽헌·시립박물관" },
+        { contentid: "2390089", label: "강릉의 대표 유적지 오죽헌을 걷다 (여행코스)" },
+        { contentid: "4062752", label: "오죽헌 전통뱃놀이 체험시설" },
+        { contentid: "1348733", label: "오죽헌한정식 (식당, 다른 지역일 가능성)" },
+      ],
+    },
+    {
+      name: "선교장",
     seedLat: 37.7865369,
     seedLon: 128.8851213,
     candidates: [
