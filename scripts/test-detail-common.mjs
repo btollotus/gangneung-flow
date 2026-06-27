@@ -15,8 +15,7 @@ const url =
   `&MobileOS=ETC` +
   `&MobileApp=gangneungflow` +
   `&_type=json` +
-  `&contentId=${CONTENT_ID}` +
-  `&contentTypeId=${CONTENT_TYPE_ID}`;
+ `&contentId=${CONTENT_ID}`;
 
 console.log("요청 URL:", url.replace(serviceKey, "***KEY***"));
 
