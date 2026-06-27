@@ -1,0 +1,47 @@
+{
+    "_meta": {
+      "generated": "2026-06-27",
+      "description": "강릉 FLOW 인사이트 — 33곳 TourAPI contentid 매핑 (검증 완료). 좌표 비교로 검증된 결과이며, 본 데이터(detailCommon2/detailImage2) 일괄 수집 시 이 파일을 그대로 사용하면 재검색 불필요.",
+      "confirmed_count": 22,
+      "unregistered_count": 11
+    },
+    "places": [
+      { "name": "경포해변", "tier": "landmark", "contentid": "128758", "status": "confirmed" },
+      { "name": "경포대", "tier": "landmark", "contentid": "125790", "status": "confirmed", "note": "이미지 7장까지 검증 완료" },
+      { "name": "안목해변 커피거리", "tier": "landmark", "contentid": "127722", "status": "confirmed" },
+      { "name": "오죽헌", "tier": "landmark", "contentid": "129784", "status": "confirmed", "note": "거리보다 콘텐츠 적합성 기준으로 채택 (박물관 콘텐츠, 여행코스 아님)" },
+      { "name": "강릉중앙시장", "tier": "landmark", "contentid": "132771", "status": "confirmed" },
+      { "name": "주문진수산시장", "tier": "landmark", "contentid": "132774", "status": "confirmed" },
+      { "name": "선교장", "tier": "landmark", "contentid": "125800", "status": "confirmed" },
+      { "name": "강릉대도호부관아", "tier": "landmark", "contentid": "125788", "status": "confirmed", "note": "TourAPI에는 '강릉 임영관 삼문'으로 등록, 좌표로 동일 부지 확인" },
+      { "name": "하슬라아트월드", "tier": "landmark", "contentid": "127951", "status": "confirmed" },
+      { "name": "모래시계공원(정동진)", "tier": "landmark", "contentid": "128721", "status": "confirmed" },
+  
+      { "name": "강릉월화거리", "tier": "underrated", "contentid": "2588752", "status": "confirmed" },
+      { "name": "월화거리야시장", "tier": "underrated", "contentid": "2588752", "status": "confirmed", "note": "강릉월화거리와 같은 거리 안의 금·토 야시장. 같은 contentid로 콘텐츠 공유, 별도 스탬프 위치로 유지" },
+      { "name": "송정해수욕장", "tier": "underrated", "contentid": "125694", "status": "confirmed", "note": "초기 검색은 부산 송정해수욕장(contentid 126080)이 잘못 반환됨 — 주의" },
+      { "name": "풍호마을", "tier": "underrated", "contentid": "3069501", "status": "confirmed" },
+      { "name": "사천해변", "tier": "underrated", "contentid": "125696", "status": "confirmed" },
+      { "name": "솔향대게", "tier": "underrated", "contentid": "2685587", "status": "confirmed" },
+      { "name": "초당순두부마을", "tier": "underrated", "contentid": "264370", "status": "confirmed", "note": "TourAPI 주소가 강문동으로 나오나, 실제 대표 주소가 강문동인 것이 정상 (확인됨)" },
+      { "name": "연곡해변", "tier": "underrated", "contentid": "125698", "status": "confirmed" },
+      { "name": "강문해변", "tier": "underrated", "contentid": "585522", "status": "confirmed" },
+  
+      { "name": "서울양계", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "움찐이", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "대게특별시", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "교동대게", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "강릉모루도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "강릉시립중앙도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "초당작은도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "로하스강릉작은도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "사천진바위섬", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "농산물 새벽시장", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      { "name": "중앙성남전통시장", "tier": "underrated", "contentid": null, "status": "unregistered" },
+  
+      { "name": "안반데기", "tier": "mission", "contentid": "2714439", "status": "confirmed", "note": "초기 매칭 로직 버그로 1548m 떨어진 잘못된 contentid(2930702)가 선택됐었음 — 좌표 검증으로 수정됨" },
+      { "name": "노추산 모정탑길", "tier": "mission", "contentid": "1869883", "status": "confirmed" },
+      { "name": "굴산사지 당간지주", "tier": "mission", "contentid": "125769", "status": "confirmed", "note": "이름에 '당간지주'가 들어간 후보(3532463)는 386m 떨어진 오답. 이름이 더 일반적인 '강릉 굴산사지'가 정답" }
+    ]
+  }
+  
