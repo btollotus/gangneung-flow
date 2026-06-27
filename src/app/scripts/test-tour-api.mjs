@@ -22,9 +22,10 @@ const url =
   `&numOfRows=30` +
   `&keyword=${encodeURIComponent(KEYWORD)}`;
 
-console.log("요청 키워드:", KEYWORD);
-
-const res = await fetch(url);
+  console.log("요청 키워드:", KEYWORD);
+  console.log("요청 URL:", url.replace(serviceKey, "***KEY***"));
+  
+  const res = await fetch(url);
 const data = await res.json();
 
 console.log(JSON.stringify(data, null, 2));
