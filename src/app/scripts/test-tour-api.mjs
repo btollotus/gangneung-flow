@@ -1,3 +1,4 @@
+// TEST123
 // scripts/test-tour-api.mjs
 // 사용법: node --env-file=.env.local scripts/test-tour-api.mjs
 
