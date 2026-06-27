@@ -16,15 +16,7 @@ const url =
   `&MobileApp=gangneungflow` +
   `&_type=json` +
   `&contentId=${CONTENT_ID}` +
-  `&contentTypeId=${CONTENT_TYPE_ID}` +
-  `&defaultYN=Y` +
-  `&firstImageYN=Y` +
-  `&areacodeYN=Y` +
-  `&catcodeYN=Y` +
-  `&addrinfoYN=Y` +
-  `&mapinfoYN=Y` +
-  `&overviewYN=Y` +
-  `&transGuideYN=Y`;
+  `&contentTypeId=${CONTENT_TYPE_ID}`;
 
 console.log("요청 URL:", url.replace(serviceKey, "***KEY***"));
 
@@ -43,11 +35,7 @@ if (!detail) {
   process.exit(0);
 }
 
-console.log("\n=== 주요 필드 ===");
-console.log("title:", detail.title);
-console.log("addr1:", detail.addr1);
-console.log("addr2:", detail.addr2);
-console.log("mapx:", detail.mapx);
-console.log("mapy:", detail.mapy);
-console.log("\n=== overview (개요 전문) ===");
-console.log(detail.overview);
+console.log("\n=== 응답에 실제로 들어있는 필드 전체 (key 목록) ===");
+console.log(Object.keys(detail));
+console.log("\n=== 전체 내용 ===");
+console.log(JSON.stringify(detail, null, 2));
