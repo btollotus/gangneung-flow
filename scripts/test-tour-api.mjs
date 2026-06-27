@@ -8,7 +8,7 @@ if (!serviceKey) {
   process.exit(1);
 }
 
-const KEYWORD = "경포대"; // 전국 대상, areaCode 제한 없이 재검색
+const KEYWORD = "송정"; // 전국 대상, areaCode 제한 없이 재검색 — 부산 송정해수욕장과 강릉 것을 구분하기 위한 검색
 
 // 주의: serviceKey는 이미 Encoding된 값이므로 URLSearchParams를 쓰지 않고
 // 직접 문자열로 붙인다 (이중 인코딩 방지)
