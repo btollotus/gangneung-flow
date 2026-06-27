@@ -19,7 +19,7 @@ const url =
   `&MobileApp=gangneungflow` +
   `&_type=json` +
   `&areaCode=32` +
-  `&sigunguCode=1` +
+  `&numOfRows=30` +
   `&keyword=${encodeURIComponent(KEYWORD)}`;
 
 console.log("요청 키워드:", KEYWORD);
