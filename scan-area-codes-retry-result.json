@@ -1,0 +1,323 @@
+[
+  {
+    "tier": "landmark",
+    "name": "경포해변",
+    "prevKeyword": "경포해변",
+    "keyword": "경포해수욕장",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "경포해수욕장",
+        "contentid": "128758",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 강릉시 창해로 514 (안현동)",
+        "mapx": "128.9102102476",
+        "mapy": "37.8034055083"
+      }
+    ]
+  },
+  {
+    "tier": "landmark",
+    "name": "강릉중앙시장",
+    "prevKeyword": "강릉중앙시장",
+    "keyword": "중앙시장",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "강릉 중앙시장",
+        "contentid": "132771",
+        "contenttypeid": "38",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 강릉시 금성로 21",
+        "mapx": "128.898632282517",
+        "mapy": "37.7539965365165"
+      },
+      {
+        "title": "강화 중앙시장",
+        "contentid": "1178052",
+        "contenttypeid": "38",
+        "areacode": "2",
+        "sigungucode": "1",
+        "addr1": "인천광역시 강화군 강화읍 강화대로 430",
+        "mapx": "126.4841777761",
+        "mapy": "37.7475993708"
+      },
+      {
+        "title": "개봉중앙시장",
+        "contentid": "2758193",
+        "contenttypeid": "38",
+        "areacode": "1",
+        "sigungucode": "7",
+        "addr1": "서울특별시 구로구 개봉로17길 34 (개봉동)",
+        "mapx": "126.8538844883",
+        "mapy": "37.4916357215"
+      },
+      {
+        "title": "경주 중앙시장",
+        "contentid": "990539",
+        "contenttypeid": "38",
+        "areacode": "35",
+        "sigungucode": "2",
+        "addr1": "경상북도 경주시 금성로 295",
+        "mapx": "129.2067541331",
+        "mapy": "35.8439732229"
+      },
+      {
+        "title": "구미새마을중앙시장",
+        "contentid": "2736738",
+        "contenttypeid": "38",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "경상북도 구미시 구미중앙로9길 11 (원평동)",
+        "mapx": "128.3299255605999",
+        "mapy": "36.13064774285063"
+      },
+      {
+        "title": "노브랜드 삼척중앙시장점",
+        "contentid": "4024908",
+        "contenttypeid": "38",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 삼척시 진주로 12-21 (남양동)",
+        "mapx": "129.16462192354",
+        "mapy": "37.4420996707986"
+      },
+      {
+        "title": "논산화지중앙시장",
+        "contentid": "2770357",
+        "contenttypeid": "38",
+        "areacode": "34",
+        "sigungucode": "3",
+        "addr1": "충청남도 논산시 대화로 78",
+        "mapx": "127.0850264488",
+        "mapy": "36.2086321138"
+      },
+      {
+        "title": "대림중앙시장",
+        "contentid": "2037026",
+        "contenttypeid": "38",
+        "areacode": "1",
+        "sigungucode": "20",
+        "addr1": "서울특별시 영등포구 디지털로37나길 21 (대림동)",
+        "mapx": "126.8997025371",
+        "mapy": "37.4916032088"
+      },
+      {
+        "title": "대전 중앙시장",
+        "contentid": "1434477",
+        "contenttypeid": "38",
+        "areacode": "3",
+        "sigungucode": "2",
+        "addr1": "대전광역시 동구 대전로 783",
+        "mapx": "127.4331753997",
+        "mapy": "36.3295438687"
+      },
+      {
+        "title": "동두천 중앙시장",
+        "contentid": "132744",
+        "contenttypeid": "38",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "경기도 동두천시 생연동 609-27",
+        "mapx": "127.0534710000",
+        "mapy": "37.9070780000"
+      }
+    ]
+  },
+  {
+    "tier": "landmark",
+    "name": "강릉대도호부관아",
+    "prevKeyword": "강릉대도호부관아",
+    "keyword": "임영관",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "강릉 임영관 삼문",
+        "contentid": "125788",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 강릉시 임영로131번길 6",
+        "mapx": "128.891741309463",
+        "mapy": "37.7530826225572"
+      }
+    ]
+  },
+  {
+    "tier": "landmark",
+    "name": "모래시계공원(정동진)",
+    "prevKeyword": "정동진 모래시계공원",
+    "keyword": "모래시계공원",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "모래시계공원",
+        "contentid": "128721",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 강릉시 강동면 헌화로 990-1",
+        "mapx": "129.0379796598",
+        "mapy": "37.6871057814"
+      }
+    ]
+  },
+  {
+    "tier": "underrated",
+    "name": "강릉월화거리",
+    "prevKeyword": "강릉월화거리",
+    "keyword": "월화거리",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "강릉 월화거리",
+        "contentid": "2588752",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 강릉시 금성로11번길 9",
+        "mapx": "128.897418452855",
+        "mapy": "37.755846288051"
+      }
+    ]
+  },
+  {
+    "tier": "underrated",
+    "name": "사천진바위섬",
+    "prevKeyword": "사천진바위섬",
+    "keyword": "사천진리 해변",
+    "hypothesis": true,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "강릉모루도서관",
+    "prevKeyword": "강릉모루도서관",
+    "keyword": "모루도서관",
+    "hypothesis": true,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "강릉시립중앙도서관",
+    "prevKeyword": "강릉시립중앙도서관",
+    "keyword": "강릉시립도서관",
+    "hypothesis": true,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "농산물 새벽시장",
+    "prevKeyword": "강릉 농산물 새벽시장",
+    "keyword": "강릉새벽시장",
+    "hypothesis": true,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "중앙성남전통시장",
+    "prevKeyword": "중앙성남전통시장",
+    "keyword": "성남시장",
+    "hypothesis": true,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "월화거리야시장",
+    "prevKeyword": "월화거리야시장",
+    "keyword": "월화거리",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "강릉 월화거리",
+        "contentid": "2588752",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": "",
+        "addr1": "강원특별자치도 강릉시 금성로11번길 9",
+        "mapx": "128.897418452855",
+        "mapy": "37.755846288051"
+      }
+    ]
+  },
+  {
+    "tier": "mission",
+    "name": "굴산사지 당간지주",
+    "prevKeyword": "굴산사지 당간지주",
+    "keyword": "굴산사지",
+    "hypothesis": true,
+    "candidates": [
+      {
+        "title": "강릉 굴산사지",
+        "contentid": "125769",
+        "contenttypeid": "12",
+        "areacode": "32",
+        "sigungucode": "1",
+        "addr1": "강원특별자치도 강릉시 구정면 학산리",
+        "mapx": "128.8918046506",
+        "mapy": "37.7072681694"
+      },
+      {
+        "title": "굴산사지당간지주",
+        "contentid": "3532463",
+        "contenttypeid": "12",
+        "areacode": "32",
+        "sigungucode": "1",
+        "addr1": "강원특별자치도 강릉시 구정면 금평로 92-50",
+        "mapx": "128.8875744540",
+        "mapy": "37.7079985585"
+      }
+    ]
+  },
+  {
+    "tier": "underrated",
+    "name": "서울양계",
+    "prevKeyword": "서울양계",
+    "keyword": "서울양계",
+    "hypothesis": false,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "움찐이",
+    "prevKeyword": "움찐이",
+    "keyword": "움찐이",
+    "hypothesis": false,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "대게특별시",
+    "prevKeyword": "대게특별시",
+    "keyword": "대게특별시",
+    "hypothesis": false,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "교동대게",
+    "prevKeyword": "교동대게",
+    "keyword": "교동대게",
+    "hypothesis": false,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "초당작은도서관",
+    "prevKeyword": "초당작은도서관",
+    "keyword": "초당작은도서관",
+    "hypothesis": false,
+    "candidates": []
+  },
+  {
+    "tier": "underrated",
+    "name": "로하스강릉작은도서관",
+    "prevKeyword": "로하스강릉작은도서관",
+    "keyword": "로하스강릉작은도서관",
+    "hypothesis": false,
+    "candidates": []
+  }
+]
