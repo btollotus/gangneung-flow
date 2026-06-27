@@ -6,7 +6,7 @@ if (!serviceKey) {
   process.exit(1);
 }
 
-const CONTENT_ID = "3454461"; // 경포호수광장
+const CONTENT_ID = "125790"; // 강릉 경포대 (확정)
 const CONTENT_TYPE_ID = "12"; // 관광지
 
 const url =
