@@ -67,12 +67,60 @@ const PLACES = [
   },
   {
     name: "안반데기",
-    seedLat: 37.6226290,
+    seedLat: 37.622629,
     seedLon: 128.7391555,
     candidates: [
       { contentid: "2930702", label: "강릉안반데기관광농원" },
       { contentid: "2714439", label: "안반데기 (이름 정확히 일치)" },
     ],
+  },
+  {
+    name: "안목해변 커피거리",
+    seedLat: 37.7723486,
+    seedLon: 128.9476577,
+    candidates: [{ contentid: "127722", label: "안목해변 (후보 1개)" }],
+  },
+  {
+    name: "주문진수산시장",
+    seedLat: 37.8910576,
+    seedLon: 128.8277523,
+    candidates: [{ contentid: "132774", label: "주문진수산시장 (후보 1개)" }],
+  },
+  {
+    name: "송정해수욕장",
+    seedLat: 37.7767843,
+    seedLon: 128.9379875,
+    candidates: [{ contentid: "126080", label: "송정해수욕장 (⚠️ 부산 동명 해변 있음, 위험도 높음)" }],
+  },
+  {
+    name: "풍호마을",
+    seedLat: 37.7386303,
+    seedLon: 128.9544485,
+    candidates: [{ contentid: "3069501", label: "풍호마을 (후보 1개)" }],
+  },
+  {
+    name: "사천해변",
+    seedLat: 37.8384299,
+    seedLon: 128.8767884,
+    candidates: [{ contentid: "125696", label: "사천해변 (후보 1개)" }],
+  },
+  {
+    name: "초당순두부마을",
+    seedLat: 37.7925599,
+    seedLon: 128.9170172,
+    candidates: [{ contentid: "264370", label: "초당순두부마을 (후보 1개)" }],
+  },
+  {
+    name: "솔향대게",
+    seedLat: 37.7907930,
+    seedLon: 128.9204173,
+    candidates: [{ contentid: "2685587", label: "솔향대게 (후보 1개)" }],
+  },
+  {
+    name: "노추산 모정탑길",
+    seedLat: 37.5711862,
+    seedLon: 128.7395640,
+    candidates: [{ contentid: "1869883", label: "노추산 모정탑길 (후보 1개)" }],
   },
 ];
 
