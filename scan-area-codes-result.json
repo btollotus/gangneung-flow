@@ -1,0 +1,541 @@
+[
+  {
+    "tier": "landmark",
+    "name": "경포해변",
+    "keyword": "경포해변",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "landmark",
+    "name": "경포대",
+    "keyword": "경포대",
+    "candidates": [
+      {
+        "title": "강릉 경포대",
+        "contentid": "125790",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "경포대 산호 펜션",
+        "contentid": "3534228",
+        "contenttypeid": "32",
+        "areacode": "32",
+        "sigungucode": "1"
+      },
+      {
+        "title": "경포대오션호텔",
+        "contentid": "3540838",
+        "contenttypeid": "32",
+        "areacode": "32",
+        "sigungucode": "1"
+      },
+      {
+        "title": "금릉경포대",
+        "contentid": "128274",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "월출산국립공원 경포대지구",
+        "contentid": "2747100",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "호린파크(경포대허브농장)",
+        "contentid": "2721547",
+        "contenttypeid": "12",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "강릉 경포대",
+      "contentid": "125790",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "landmark",
+    "name": "안목해변 커피거리",
+    "keyword": "안목해변",
+    "candidates": [
+      {
+        "title": "안목해변",
+        "contentid": "127722",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "안목해변",
+      "contentid": "127722",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "landmark",
+    "name": "오죽헌",
+    "keyword": "오죽헌",
+    "candidates": [
+      {
+        "title": "강릉 오죽헌·시립박물관",
+        "contentid": "129784",
+        "contenttypeid": "14",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "강릉의 대표 유적지 오죽헌을 걷다.",
+        "contentid": "2390089",
+        "contenttypeid": "25",
+        "areacode": "32",
+        "sigungucode": "1"
+      },
+      {
+        "title": "오죽헌 전통뱃놀이 체험시설",
+        "contentid": "4062752",
+        "contenttypeid": "28",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "오죽헌한정식",
+        "contentid": "1348733",
+        "contenttypeid": "39",
+        "areacode": "38",
+        "sigungucode": "13"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "강릉 오죽헌·시립박물관",
+      "contentid": "129784",
+      "contenttypeid": "14",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "landmark",
+    "name": "강릉중앙시장",
+    "keyword": "강릉중앙시장",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "landmark",
+    "name": "주문진수산시장",
+    "keyword": "주문진수산시장",
+    "candidates": [
+      {
+        "title": "주문진수산시장",
+        "contentid": "132774",
+        "contenttypeid": "38",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "주문진수산시장",
+      "contentid": "132774",
+      "contenttypeid": "38",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "landmark",
+    "name": "선교장",
+    "keyword": "선교장",
+    "candidates": [
+      {
+        "title": "강릉 선교장",
+        "contentid": "125800",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "강릉선교장",
+        "contentid": "1989501",
+        "contenttypeid": "32",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "강릉 선교장",
+      "contentid": "125800",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "landmark",
+    "name": "강릉대도호부관아",
+    "keyword": "강릉대도호부관아",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "landmark",
+    "name": "하슬라아트월드",
+    "keyword": "하슬라아트월드",
+    "candidates": [
+      {
+        "title": "하슬라아트월드",
+        "contentid": "127951",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "하슬라아트월드",
+        "contentid": "1048785",
+        "contenttypeid": "32",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "하슬라아트월드",
+      "contentid": "127951",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "landmark",
+    "name": "모래시계공원(정동진)",
+    "keyword": "정동진 모래시계공원",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "서울양계",
+    "keyword": "서울양계",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "강릉월화거리",
+    "keyword": "강릉월화거리",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "송정해수욕장",
+    "keyword": "송정해수욕장",
+    "candidates": [
+      {
+        "title": "송정해수욕장",
+        "contentid": "126080",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "송정해수욕장",
+      "contentid": "126080",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "underrated",
+    "name": "움찐이",
+    "keyword": "움찐이",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "풍호마을",
+    "keyword": "풍호마을",
+    "candidates": [
+      {
+        "title": "풍호마을",
+        "contentid": "3069501",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "풍호마을",
+      "contentid": "3069501",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "underrated",
+    "name": "사천해변",
+    "keyword": "사천해변",
+    "candidates": [
+      {
+        "title": "사천해변(사천해수욕장)",
+        "contentid": "125696",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "사천해변(사천해수욕장)",
+      "contentid": "125696",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "underrated",
+    "name": "사천진바위섬",
+    "keyword": "사천진바위섬",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "초당순두부마을",
+    "keyword": "초당순두부마을",
+    "candidates": [
+      {
+        "title": "초당순두부마을",
+        "contentid": "264370",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "초당순두부마을",
+      "contentid": "264370",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "underrated",
+    "name": "솔향대게",
+    "keyword": "솔향대게",
+    "candidates": [
+      {
+        "title": "솔향대게",
+        "contentid": "2685587",
+        "contenttypeid": "39",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "솔향대게",
+      "contentid": "2685587",
+      "contenttypeid": "39",
+      "areacode": "32",
+      "sigungucode": "1"
+    }
+  },
+  {
+    "tier": "underrated",
+    "name": "대게특별시",
+    "keyword": "대게특별시",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "교동대게",
+    "keyword": "교동대게",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "강릉모루도서관",
+    "keyword": "강릉모루도서관",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "강릉시립중앙도서관",
+    "keyword": "강릉시립중앙도서관",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "초당작은도서관",
+    "keyword": "초당작은도서관",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "로하스강릉작은도서관",
+    "keyword": "로하스강릉작은도서관",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "연곡해변",
+    "keyword": "연곡해변",
+    "candidates": [
+      {
+        "title": "연곡해변(연곡해수욕장)",
+        "contentid": "125698",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "연곡해변솔향기캠핑장",
+        "contentid": "2744417",
+        "contenttypeid": "28",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "연곡해변(연곡해수욕장)",
+      "contentid": "125698",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "underrated",
+    "name": "농산물 새벽시장",
+    "keyword": "강릉 농산물 새벽시장",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "중앙성남전통시장",
+    "keyword": "중앙성남전통시장",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "월화거리야시장",
+    "keyword": "월화거리야시장",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  },
+  {
+    "tier": "underrated",
+    "name": "강문해변",
+    "keyword": "강문해변",
+    "candidates": [
+      {
+        "title": "강문해변",
+        "contentid": "585522",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "강문해변화장실",
+        "contentid": "3547899",
+        "contenttypeid": "12",
+        "areacode": "32",
+        "sigungucode": "1"
+      },
+      {
+        "title": "스타벅스 강릉강문해변점",
+        "contentid": "3536360",
+        "contenttypeid": "39",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "강문해변",
+      "contentid": "585522",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "mission",
+    "name": "안반데기",
+    "keyword": "안반데기",
+    "candidates": [
+      {
+        "title": "강릉안반데기관광농원",
+        "contentid": "2930702",
+        "contenttypeid": "12",
+        "areacode": "",
+        "sigungucode": ""
+      },
+      {
+        "title": "안반데기",
+        "contentid": "2714439",
+        "contenttypeid": "12",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "강릉안반데기관광농원",
+      "contentid": "2930702",
+      "contenttypeid": "12",
+      "areacode": "",
+      "sigungucode": ""
+    }
+  },
+  {
+    "tier": "mission",
+    "name": "노추산 모정탑길",
+    "keyword": "노추산 모정탑길",
+    "candidates": [
+      {
+        "title": "노추산 모정탑길",
+        "contentid": "1869883",
+        "contenttypeid": "28",
+        "areacode": "32",
+        "sigungucode": "1"
+      }
+    ],
+    "exactOrCloseMatch": {
+      "title": "노추산 모정탑길",
+      "contentid": "1869883",
+      "contenttypeid": "28",
+      "areacode": "32",
+      "sigungucode": "1"
+    }
+  },
+  {
+    "tier": "mission",
+    "name": "굴산사지 당간지주",
+    "keyword": "굴산사지 당간지주",
+    "candidates": [],
+    "exactOrCloseMatch": null
+  }
+]

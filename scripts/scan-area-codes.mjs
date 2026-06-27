@@ -1,13 +1,7 @@
-// scripts/scan-area-codes.mjs
-// 목적: 33곳 전체에 대해 searchKeyword2를 "지역 제한 없이" 호출해서
-//       areacode/sigungucode가 빈 값인 항목이 있는지 사전 스캔.
-// 실행: node --env-file=.env.local scripts/scan-area-codes.mjs
-//
-// 주의: 이 스크립트는 DB(places 테이블)를 건드리지 않음. 콘솔 출력 + JSON 파일 저장만 함.
-// 검증된 패턴 적용:
-//   - serviceKey는 이미 Encoding된 값이므로 추가 encodeURIComponent 하지 않음
-//   - keyword만 encodeURIComponent 적용
-//   - areaCode 파라미터 자체를 넣지 않음 (전국 검색)
+// scripts/scan-area-codes-retry.mjs
+// 목적: 1차 스캔(scan-area-codes.mjs)에서 "검색 결과 0건"이 나온 18곳을 재시도.
+//       12곳은 가설 키워드로, 6곳은 원래 검색어 그대로(진짜 미등록인지 재확인용).
+// 실행: node --env-file=.env.local scripts/scan-area-codes-retry.mjs
 
 import { writeFile } from "node:fs/promises";
 
@@ -17,46 +11,26 @@ if (!serviceKey) {
   process.exit(1);
 }
 
-// 33곳 — name: DB에 들어간 이름 그대로, keyword: 검색에 쓸 키워드(필요시 단순화)
 const PLACES = [
-  // 랜드마크 10
-  { tier: "landmark", name: "경포해변", keyword: "경포해변" },
-  { tier: "landmark", name: "경포대", keyword: "경포대" },
-  { tier: "landmark", name: "안목해변 커피거리", keyword: "안목해변" },
-  { tier: "landmark", name: "오죽헌", keyword: "오죽헌" },
-  { tier: "landmark", name: "강릉중앙시장", keyword: "강릉중앙시장" },
-  { tier: "landmark", name: "주문진수산시장", keyword: "주문진수산시장" },
-  { tier: "landmark", name: "선교장", keyword: "선교장" },
-  { tier: "landmark", name: "강릉대도호부관아", keyword: "강릉대도호부관아" },
-  { tier: "landmark", name: "하슬라아트월드", keyword: "하슬라아트월드" },
-  { tier: "landmark", name: "모래시계공원(정동진)", keyword: "정동진 모래시계공원" },
+  { tier: "landmark", name: "경포해변", prevKeyword: "경포해변", keyword: "경포해수욕장", hypothesis: true },
+  { tier: "landmark", name: "강릉중앙시장", prevKeyword: "강릉중앙시장", keyword: "중앙시장", hypothesis: true },
+  { tier: "landmark", name: "강릉대도호부관아", prevKeyword: "강릉대도호부관아", keyword: "임영관", hypothesis: true },
+  { tier: "landmark", name: "모래시계공원(정동진)", prevKeyword: "정동진 모래시계공원", keyword: "모래시계공원", hypothesis: true },
+  { tier: "underrated", name: "강릉월화거리", prevKeyword: "강릉월화거리", keyword: "월화거리", hypothesis: true },
+  { tier: "underrated", name: "사천진바위섬", prevKeyword: "사천진바위섬", keyword: "사천진리 해변", hypothesis: true },
+  { tier: "underrated", name: "강릉모루도서관", prevKeyword: "강릉모루도서관", keyword: "모루도서관", hypothesis: true },
+  { tier: "underrated", name: "강릉시립중앙도서관", prevKeyword: "강릉시립중앙도서관", keyword: "강릉시립도서관", hypothesis: true },
+  { tier: "underrated", name: "농산물 새벽시장", prevKeyword: "강릉 농산물 새벽시장", keyword: "강릉새벽시장", hypothesis: true },
+  { tier: "underrated", name: "중앙성남전통시장", prevKeyword: "중앙성남전통시장", keyword: "성남시장", hypothesis: true },
+  { tier: "underrated", name: "월화거리야시장", prevKeyword: "월화거리야시장", keyword: "월화거리", hypothesis: true },
+  { tier: "mission", name: "굴산사지 당간지주", prevKeyword: "굴산사지 당간지주", keyword: "굴산사지", hypothesis: true },
 
-  // 소외상권 20
-  { tier: "underrated", name: "서울양계", keyword: "서울양계" },
-  { tier: "underrated", name: "강릉월화거리", keyword: "강릉월화거리" },
-  { tier: "underrated", name: "송정해수욕장", keyword: "송정해수욕장" },
-  { tier: "underrated", name: "움찐이", keyword: "움찐이" },
-  { tier: "underrated", name: "풍호마을", keyword: "풍호마을" },
-  { tier: "underrated", name: "사천해변", keyword: "사천해변" },
-  { tier: "underrated", name: "사천진바위섬", keyword: "사천진바위섬" },
-  { tier: "underrated", name: "초당순두부마을", keyword: "초당순두부마을" },
-  { tier: "underrated", name: "솔향대게", keyword: "솔향대게" },
-  { tier: "underrated", name: "대게특별시", keyword: "대게특별시" },
-  { tier: "underrated", name: "교동대게", keyword: "교동대게" },
-  { tier: "underrated", name: "강릉모루도서관", keyword: "강릉모루도서관" },
-  { tier: "underrated", name: "강릉시립중앙도서관", keyword: "강릉시립중앙도서관" },
-  { tier: "underrated", name: "초당작은도서관", keyword: "초당작은도서관" },
-  { tier: "underrated", name: "로하스강릉작은도서관", keyword: "로하스강릉작은도서관" },
-  { tier: "underrated", name: "연곡해변", keyword: "연곡해변" },
-  { tier: "underrated", name: "농산물 새벽시장", keyword: "강릉 농산물 새벽시장" },
-  { tier: "underrated", name: "중앙성남전통시장", keyword: "중앙성남전통시장" },
-  { tier: "underrated", name: "월화거리야시장", keyword: "월화거리야시장" },
-  { tier: "underrated", name: "강문해변", keyword: "강문해변" },
-
-  // 특별미션 3
-  { tier: "mission", name: "안반데기", keyword: "안반데기" },
-  { tier: "mission", name: "노추산 모정탑길", keyword: "노추산 모정탑길" },
-  { tier: "mission", name: "굴산사지 당간지주", keyword: "굴산사지 당간지주" },
+  { tier: "underrated", name: "서울양계", prevKeyword: "서울양계", keyword: "서울양계", hypothesis: false },
+  { tier: "underrated", name: "움찐이", prevKeyword: "움찐이", keyword: "움찐이", hypothesis: false },
+  { tier: "underrated", name: "대게특별시", prevKeyword: "대게특별시", keyword: "대게특별시", hypothesis: false },
+  { tier: "underrated", name: "교동대게", prevKeyword: "교동대게", keyword: "교동대게", hypothesis: false },
+  { tier: "underrated", name: "초당작은도서관", prevKeyword: "초당작은도서관", keyword: "초당작은도서관", hypothesis: false },
+  { tier: "underrated", name: "로하스강릉작은도서관", prevKeyword: "로하스강릉작은도서관", keyword: "로하스강릉작은도서관", hypothesis: false },
 ];
 
 function buildUrl(keyword) {
@@ -120,63 +94,74 @@ async function main() {
       contenttypeid: it.contenttypeid,
       areacode: it.areacode,
       sigungucode: it.sigungucode,
+      addr1: it.addr1,
+      mapx: it.mapx,
+      mapy: it.mapy,
     }));
 
-    const exactOrCloseMatch = candidates.find(
-      (c) => c.title === place.name || c.title?.includes(place.name) || place.name.includes(c.title ?? "")
+    console.log(
+      `\n[${place.tier}] ${place.name}  (이전 검색어: "${place.prevKeyword}" → ${place.hypothesis ? "가설" : "동일"} 검색어: "${place.keyword}")`
     );
-
-    console.log(`\n[${place.tier}] ${place.name}  (검색어: "${place.keyword}")`);
     console.log(`  totalCount: ${body?.totalCount ?? 0}`);
     if (candidates.length === 0) {
-      console.log("  ⚠️  검색 결과 없음 — 이 장소는 TourAPI에 등록 안 됐을 가능성");
+      console.log(
+        place.hypothesis
+          ? "  ⚠️  가설 키워드로도 결과 없음 — TourAPI 미등록 가능성이 더 높아짐"
+          : "  ⚠️  여전히 결과 없음 — TourAPI 미등록으로 잠정 결론"
+      );
     } else {
       candidates.forEach((c, i) => {
         const blank = !c.areacode || !c.sigungucode;
         const marker = blank ? " ⚠️ areacode/sigungucode 비어있음" : "";
         console.log(
-          `  ${i + 1}. ${c.title} | contentid=${c.contentid} | type=${c.contenttypeid} | areacode="${c.areacode}" sigungucode="${c.sigungucode}"${marker}`
+          `  ${i + 1}. ${c.title} | contentid=${c.contentid} | type=${c.contenttypeid} | addr="${c.addr1 ?? ""}" | mapx/mapy="${c.mapx}/${c.mapy}"${marker}`
         );
       });
-      if (!exactOrCloseMatch) {
-        console.log("  ⚠️  이름이 정확히 일치하는 후보를 못 찾음 — 수동 확인 필요");
-      }
     }
 
-    results.push({ ...place, candidates, exactOrCloseMatch: exactOrCloseMatch ?? null });
-    await sleep(300); // API 과호출 방지용 최소 지연
+    results.push({ ...place, candidates });
+    await sleep(300);
   }
 
-  // ── 요약 ──
-  console.log("\n\n========== 요약 ==========");
+  console.log("\n\n========== 재시도 요약 ==========");
   const apiErrors = results.filter((r) => r.apiError);
-  const noResult = results.filter((r) => !r.apiError && !r.error && r.candidates.length === 0);
-  const blankCodeOnly = results.filter(
-    (r) =>
-      r.candidates.length > 0 &&
-      r.exactOrCloseMatch &&
-      (!r.exactOrCloseMatch.areacode || !r.exactOrCloseMatch.sigungucode)
+  const stillNoResult = results.filter((r) => !r.apiError && !r.error && r.candidates.length === 0);
+  const nowFound = results.filter((r) => r.candidates.length > 0);
+
+  if (apiErrors.length > 0) {
+    console.log(`API 에러가 난 곳 (${apiErrors.length}곳):`);
+    apiErrors.forEach((r) => console.log(`  - ${r.name} (${r.apiError.resultCode}: ${r.apiError.resultMsg})`));
+    console.log("");
+  }
+
+  console.log(`가설 적용 후에도 여전히 결과 없는 곳 (${stillNoResult.length}곳, TourAPI 미등록으로 잠정 결론):`);
+  stillNoResult.forEach((r) => console.log(`  - ${r.name} (검색어: "${r.keyword}")`));
+
+  console.log(`\n새로 결과가 나온 곳 (${nowFound.length}곳, 후보 중 직접 골라야 함):`);
+  nowFound.forEach((r) => console.log(`  - ${r.name} (검색어: "${r.keyword}") → ${r.candidates.length}건`));
+
+  console.log("\n\n========== 중복 의심 3곳 좌표 비교 ==========");
+  const marketNames = ["강릉월화거리", "월화거리야시장", "중앙성남전통시장"];
+  for (const name of marketNames) {
+    const r = results.find((x) => x.name === name);
+    if (!r || r.candidates.length === 0) {
+      console.log(`${name}: 결과 없음 — 비교 불가`);
+      continue;
+    }
+    r.candidates.forEach((c, i) => {
+      console.log(`${name} 후보${i + 1}: ${c.title} | addr="${c.addr1 ?? ""}" | mapx/mapy="${c.mapx}/${c.mapy}"`);
+    });
+  }
+  console.log(
+    "\n→ 위 좌표들이 서로 거의 같다면(소수점 4자리 이상 일치) 같은 장소일 가능성이 높습니다. 직접 비교해서 알려주세요."
   );
-  const noMatch = results.filter((r) => r.candidates.length > 0 && !r.exactOrCloseMatch);
-
-  console.log(`API 에러가 난 곳 (${apiErrors.length}곳, 파라미터/키 문제일 수 있음 — 먼저 확인):`);
-  apiErrors.forEach((r) => console.log(`  - ${r.name} (${r.apiError.resultCode}: ${r.apiError.resultMsg})`));
-
-  console.log(`\n검색 결과 자체가 없는 곳 (${noResult.length}곳):`);
-  noResult.forEach((r) => console.log(`  - ${r.name}`));
-
-  console.log(`\n이름은 매칭됐지만 areacode/sigungucode가 빈 값인 곳 (${blankCodeOnly.length}곳):`);
-  blankCodeOnly.forEach((r) => console.log(`  - ${r.name} (contentid=${r.exactOrCloseMatch.contentid})`));
-
-  console.log(`\n이름이 정확히 매칭되는 후보를 못 찾은 곳 (${noMatch.length}곳, 수동 확인 필요):`);
-  noMatch.forEach((r) => console.log(`  - ${r.name}`));
 
   await writeFile(
-    "scan-area-codes-result.json",
+    "scan-area-codes-retry-result.json",
     JSON.stringify(results, null, 2),
     "utf-8"
   );
-  console.log("\n전체 결과를 scan-area-codes-result.json 에 저장했습니다.");
+  console.log("\n전체 결과를 scan-area-codes-retry-result.json 에 저장했습니다.");
 }
 
 main();
