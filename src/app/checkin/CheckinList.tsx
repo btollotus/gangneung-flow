@@ -33,10 +33,11 @@ function haversineDistanceMeters(
   return R * c
 }
 
-export default function CheckinList({ places }const [location, setLocation] = useState<LocationState>({ status: 'loading' })
-const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
-const [confirmingId, setConfirmingId] = useState<string | null>(null)
-const [errorMessage, setErrorMessage] = useState<string | null>(null)
+export default function CheckinList({ places }: { places: CheckinPlace[] }) {
+    const [location, setLocation] = useState<LocationState>({ status: 'loading' })
+    const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
+    const [confirmingId, setConfirmingId] = useState<string | null>(null)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!navigator.geolocation) {
