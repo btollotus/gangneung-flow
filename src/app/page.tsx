@@ -51,11 +51,11 @@ export default async function Home() {
     (underrated?.length ?? 0) + (landmarks?.length ?? 0) + (missions?.length ?? 0)
 
   return (
-    <main className="min-h-screen bg-[#F3ECDD] text-[#102A33]">
+    <main className="min-h-screen bg-sand text-ink">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-[#102A33] px-6 py-20 text-[#F3ECDD] sm:px-10">
-        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full border-[3px] border-dashed border-[#E2542B]/40" />
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#E2542B]">
+      <section className="relative overflow-hidden bg-ink px-6 py-20 text-sand sm:px-10">
+      <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full border-[3px] border-dashed border-coral/40" />
+      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-coral">
           강릉 FLOW 인사이트
         </p>
         <h1 className="mt-4 max-w-md text-3xl font-bold leading-tight sm:text-4xl">
@@ -63,14 +63,14 @@ export default async function Home() {
           <br />
           강릉의 다른 얼굴을 찍어가요
         </h1>
-        <p className="mt-4 max-w-sm text-sm text-[#F3ECDD]/80">
+        <p className="mt-4 max-w-sm text-sm text-sand/80">
           익숙한 명소부터 동네 골목까지 — 33곳을 채워가며 강릉을 새로 만나보세요.
         </p>
       </section>
 
       {/* 장소 미리보기 */}
       <section className="px-6 py-12 sm:px-10">
-        <p className="mb-6 text-xs text-[#102A33]/50">33곳 중 {previewCount}곳 미리보기</p>
+      <p className="mb-6 text-xs text-ink/50">33곳 중 {previewCount}곳 미리보기</p>
 
         <div className="mb-6 flex items-baseline justify-between">
           <h2 className="text-lg font-bold">동네 골목, 강릉지기 추천</h2>
@@ -82,7 +82,7 @@ export default async function Home() {
         </div>
 
         <div className="mt-10 mb-4">
-          <h2 className="text-sm font-semibold text-[#102A33]/60">이미 잘 알려진 명소</h2>
+        <h2 className="text-sm font-semibold text-ink/60">이미 잘 알려진 명소</h2>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {(landmarks as Place[] | null ?? []).map((place) => (
@@ -92,7 +92,7 @@ export default async function Home() {
 
         {missions && missions.length > 0 && (
           <div className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold text-[#E2542B]">특별미션</h2>
+            <h2 className="mb-4 text-sm font-semibold text-coral">특별미션</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {(missions as Place[]).map((place) => (
                 <PlaceCard key={place.id} place={place} variant="mission" />
@@ -107,7 +107,7 @@ export default async function Home() {
         <button
           disabled
           aria-disabled="true"
-          className="w-full cursor-not-allowed rounded-full bg-[#102A33]/10 px-6 py-4 text-sm font-semibold text-[#102A33]/40"
+          className="w-full cursor-not-allowed rounded-full bg-ink/10 px-6 py-4 text-sm font-semibold text-ink/40"
         >
           33곳 전체 보기 (탐색 지도 준비중)
         </button>
@@ -124,9 +124,9 @@ function PlaceCard({
   variant: Tier
 }) {
   const styles: Record<Tier, string> = {
-    landmark: 'border-[#102A33]/15 bg-white/40 text-[#102A33]/60',
-    underrated: 'border-[#4F8C82]/30 bg-white text-[#102A33] shadow-sm',
-    mission: 'border-2 border-dashed border-[#E2542B] bg-[#E2542B]/5 text-[#102A33]',
+    landmark: 'border-ink/15 bg-white/40 text-ink/60',
+    underrated: 'border-seafoam/30 bg-white text-ink shadow-sm',
+    mission: 'border-2 border-dashed border-coral bg-coral/5 text-ink',
   }
 
   return (

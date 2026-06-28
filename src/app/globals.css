@@ -3,11 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --ink: #102A33;
+  --sand: #F3ECDD;
+  --seafoam: #4F8C82;
+  --coral: #E2542B;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-sand: var(--sand);
+  --color-seafoam: var(--seafoam);
+  --color-coral: var(--coral);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

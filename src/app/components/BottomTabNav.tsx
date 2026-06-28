@@ -24,7 +24,7 @@ export default function BottomTabNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#102A33]/10 bg-[#F3ECDD] pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-ink/10 bg-sand pb-[env(safe-area-inset-bottom)]"
       aria-label="하단 탭 내비게이션"
     >
       <ul className="flex">
@@ -36,7 +36,7 @@ export default function BottomTabNav() {
             return (
               <li key={tab.label} className="flex-1">
                 <div
-                  className="flex min-h-11 flex-col items-center justify-center gap-0.5 py-2 text-[#102A33]/30"
+                  className="flex min-h-11 flex-col items-center justify-center gap-0.5 py-2 text-ink/30"
                   aria-disabled="true"
                 >
                   <Icon size={22} strokeWidth={1.8} />
@@ -52,7 +52,7 @@ export default function BottomTabNav() {
                 href={tab.href}
                 aria-current={isActive ? 'page' : undefined}
                 className={`flex min-h-11 flex-col items-center justify-center gap-0.5 py-2 ${
-                  isActive ? 'text-[#E2542B]' : 'text-[#102A33]/60'
+                  isActive ? 'text-coral' : 'text-ink/60'
                 }`}
               >
                 <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />
