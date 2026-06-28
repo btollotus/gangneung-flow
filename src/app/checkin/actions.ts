@@ -1,38 +1,127 @@
 'use server'
-confirmVisit(placeId, userLat, userLng, clientDistance) 흐름:
 
-1. createClient() (server.ts, 쿠키 기반) → supabase.auth.getUser()
-   → user 없으면 에러 반환 (위조된 user_id를 신뢰하지 않기 위해 여기서 직접 확인)
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
-2. createAdminClient() (service_role) 생성
+const CHECKIN_RADIUS_METERS = 200
 
-3. admin으로 places 테이블에서 해당 placeId의 base_xp, latitude, longitude를
-   DB에서 직접 다시 조회 (클라이언트가 보낸 값은 신뢰 안 함)
+function haversineDistanceMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371000
+  const toRad = (deg: number) => (deg * Math.PI) / 180
 
-4. [신규 제안] 서버에서 Haversine 거리 재계산
-   → 클라이언트가 보낸 lat/lng와 DB의 장소 좌표로 거리를 한 번 더 계산
-   → 200m 초과면 에러 반환 ("클라이언트 로직을 조작해서 멀리서도 체크인되는 것" 방지)
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
 
-5. xp_earned = base_xp 그대로 (옵션 A로 확정됨)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
 
-6. happened_at = new Date().toISOString()
-   (지금 이 순간의 timestamp라 UTC 문자열 그대로 OK —
-    날짜지침의 +09:00 규칙은 "날짜만 있는 문자열"을 다룰 때 얘기였고,
-    "지금 당장"을 기록하는 경우엔 해당 안 됨)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
-7. visits insert (user_id, place_id, latitude, longitude, distance_meters, xp_earned, happened_at)
-   → 실패 시 에러 로깅 + 사용자에게 실패 반환
+  return R * c
+}
 
-8. place_actions insert (action_type='visit_verified', weight=0.6, 같은 happened_at)
-   → 실패해도 visits는 이미 저장됐으니, 로깅만 하고 사용자에게는 성공으로 처리
-     (이 로그는 보조 분석용이라 핵심 흐름을 막지 않음 — 맞는지 확인 부탁드립니다)
+type ConfirmVisitResult =
+  | { success: true; xpEarned: number }
+  | { success: false; error: string }
 
-9. user_scores 갱신:
-   - 해당 user의 visits 전체를 다시 조회해서
-     total_xp = SUM(xp_earned), distinct_places_visited = COUNT(DISTINCT place_id)
-     를 재계산 (누적 증가 방식이 아니라 매번 재집계 — 33곳 규모라 성능 문제 없고,
-     드리프트 버그를 원천적으로 막음)
-   - user_scores에 upsert (user_id 기준)
-   - level 컬럼은 건드리지 않음 (칭호는 동적 계산이라는 기존 결정과 일치 — 맞는지 확인 부탁드립니다)
+export async function confirmVisit(
+  placeId: string,
+  userLat: number,
+  userLng: number
+): Promise<ConfirmVisitResult> {
+  // 1. 로그인 확인 — 쿠키 기반 세션에서 직접 조회 (클라이언트가 보낸 user_id는 신뢰하지 않음)
+  const supabase = await createClient()
+  const { data: userData, error: userError } = await supabase.auth.getUser()
 
-10. { success: true, xpEarned } 반환
+  if (userError || !userData.user) {
+    return { success: false, error: '로그인이 필요해요. 새로고침 후 다시 시도해주세요.' }
+  }
+  const userId = userData.user.id
+
+  const admin = createAdminClient()
+
+  // 2. 장소 정보를 DB에서 직접 재조회 (클라이언트가 보낸 값은 신뢰하지 않음)
+  const { data: place, error: placeError } = await admin
+    .from('places')
+    .select('id, base_xp, latitude, longitude, is_active')
+    .eq('id', placeId)
+    .single()
+
+  if (placeError || !place || !place.is_active) {
+    return { success: false, error: '장소 정보를 찾을 수 없어요.' }
+  }
+
+  // 3. 서버에서 거리 재검증 (클라이언트 로직 조작으로 멀리서 체크인되는 것 방지)
+  const distance = haversineDistanceMeters(userLat, userLng, place.latitude, place.longitude)
+
+  if (distance > CHECKIN_RADIUS_METERS) {
+    return { success: false, error: '아직 체크인 범위 밖이에요.' }
+  }
+
+  // 4. XP 확정 (옵션 A: base_xp 그대로 지급)
+  const xpEarned = place.base_xp
+  const happenedAt = new Date().toISOString()
+
+  // 5. visits insert
+  const { error: visitError } = await admin.from('visits').insert({
+    user_id: userId,
+    place_id: placeId,
+    latitude: userLat,
+    longitude: userLng,
+    distance_meters: distance,
+    xp_earned: xpEarned,
+    happened_at: happenedAt,
+  })
+
+  if (visitError) {
+    console.error('visits insert 오류:', visitError.message)
+    return { success: false, error: '방문 기록 저장에 실패했어요. 다시 시도해주세요.' }
+  }
+
+  // 6. place_actions insert — 실패해도 visits는 이미 저장됐으므로 로그만 남기고 진행
+  const { error: actionError } = await admin.from('place_actions').insert({
+    user_id: userId,
+    place_id: placeId,
+    action_type: 'visit_verified',
+    weight: 0.6,
+    happened_at: happenedAt,
+  })
+
+  if (actionError) {
+    console.error('place_actions insert 오류 (방문 기록 자체는 성공):', actionError.message)
+  }
+
+  // 7. user_scores 재집계 — 누적 증가가 아니라 visits 전체를 다시 합산 (드리프트 방지)
+  //    level 컬럼은 일부러 건드리지 않음 — upsert에 안 넣으면 기존 값 그대로 유지됨
+  const { data: allVisits, error: visitsFetchError } = await admin
+    .from('visits')
+    .select('place_id, xp_earned')
+    .eq('user_id', userId)
+
+  if (visitsFetchError || !allVisits) {
+    console.error('user_scores 재집계용 visits 조회 오류:', visitsFetchError?.message)
+    return { success: true, xpEarned } // visits 자체는 저장됐으므로 사용자에겐 성공 처리
+  }
+
+  const totalXp = allVisits.reduce((sum, v) => sum + v.xp_earned, 0)
+  const distinctPlacesVisited = new Set(allVisits.map((v) => v.place_id)).size
+
+  const { error: scoreError } = await admin
+    .from('user_scores')
+    .upsert(
+      { user_id: userId, total_xp: totalXp, distinct_places_visited: distinctPlacesVisited },
+      { onConflict: 'user_id' }
+    )
+
+  if (scoreError) {
+    console.error('user_scores upsert 오류:', scoreError.message)
+  }
+
+  return { success: true, xpEarned }
+}

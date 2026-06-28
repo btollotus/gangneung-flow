@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { CheckinPlace } from './page'
+import { confirmVisit } from './actions'
 
 type LocationState =
   | { status: 'loading' }
@@ -32,9 +33,10 @@ function haversineDistanceMeters(
   return R * c
 }
 
-export default function CheckinList({ places }: { places: CheckinPlace[] }) {
-  const [location, setLocation] = useState<LocationState>({ status: 'loading' })
-  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
+export default function CheckinList({ places }const [location, setLocation] = useState<LocationState>({ status: 'loading' })
+const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
+const [confirmingId, setConfirmingId] = useState<string | null>(null)
+const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -89,8 +91,27 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
     }))
     .sort((a, b) => a.distance - b.distance)
 
+  const handleConfirm = async (placeId: string) => {
+    setErrorMessage(null)
+    setConfirmingId(placeId)
+
+    const result = await confirmVisit(placeId, location.latitude, location.longitude)
+
+    setConfirmingId(null)
+
+    if (result.success) {
+      setConfirmedIds((prev) => new Set(prev).add(placeId))
+    } else {
+      setErrorMessage(result.error)
+    }
+  }
+
   return (
-    <ul className="space-y-3">
+    <>
+      {errorMessage && (
+        <p className="mb-3 rounded-xl bg-coral/10 p-3 text-xs text-coral">{errorMessage}</p>
+      )}
+      <ul className="space-y-3">
       {placesWithDistance.map((place) => {
         const inRange = place.distance <= CHECKIN_RADIUS_METERS
         const isConfirmed = confirmedIds.has(place.id)
@@ -111,21 +132,22 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
 
             <button
               type="button"
-              disabled={!inRange || isConfirmed}
-              onClick={() => setConfirmedIds((prev) => new Set(prev).add(place.id))}
+              disabled={!inRange || isConfirmed || confirmingId === place.id}
+              onClick={() => handleConfirm(place.id)}
               className={
                 isConfirmed
                   ? 'rounded-full bg-seafoam/20 px-4 py-2 text-xs font-semibold text-seafoam'
                   : inRange
-                  ? 'rounded-full bg-coral px-4 py-2 text-xs font-semibold text-white'
+                  ? 'rounded-full bg-coral px-4 py-2 text-xs font-semibold text-white disabled:opacity-60'
                   : 'cursor-not-allowed rounded-full bg-ink/10 px-4 py-2 text-xs font-semibold text-ink/30'
               }
             >
-              {isConfirmed ? '✅ 확인됨' : '방문 확인'}
+              {isConfirmed ? '✅ 확인됨' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
             </button>
           </li>
         )
       })}
-    </ul>
+      </ul>
+    </>
   )
 }
