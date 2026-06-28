@@ -15,7 +15,7 @@ type Tab = {
 const TABS: Tab[] = [
   { label: '홈', href: '/', icon: Home },
   { label: '탐색', href: '/explore', icon: Compass, disabled: true },
-  { label: '체크인', href: '/checkin', icon: MapPin, disabled: true },
+  { label: '체크인', href: '/checkin', icon: MapPin },
   { label: '마이페이지', href: '/my', icon: User, disabled: true },
 ]
 
