@@ -64,13 +64,13 @@ export default async function Home() {
           강릉의 다른 얼굴을 찍어가요
         </h1>
         <p className="mt-4 max-w-sm text-sm text-sand/80">
-          익숙한 명소부터 동네 골목까지 — 33곳을 채워가며 강릉을 새로 만나보세요.
+          익숙한 명소부터 동네 골목까지 — 31곳을 채워가며 강릉을 새로 만나보세요.
         </p>
       </section>
 
       {/* 장소 미리보기 */}
       <section className="px-6 py-12 sm:px-10">
-      <p className="mb-6 text-xs text-ink/50">33곳 중 {previewCount}곳 미리보기</p>
+      <p className="mb-6 text-xs text-ink/50">31곳 중 {previewCount}곳 미리보기</p>
 
         <div className="mb-6 flex items-baseline justify-between">
           <h2 className="text-lg font-bold">동네 골목, 강릉지기 추천</h2>
@@ -109,7 +109,7 @@ export default async function Home() {
           aria-disabled="true"
           className="w-full cursor-not-allowed rounded-full bg-ink/10 px-6 py-4 text-sm font-semibold text-ink/40"
         >
-          33곳 전체 보기 (탐색 지도 준비중)
+          31곳 전체 보기 (탐색 지도 준비중)
         </button>
       </section>
     </main>

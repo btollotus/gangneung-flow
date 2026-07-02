@@ -1,9 +1,9 @@
 {
     "_meta": {
       "generated": "2026-06-27",
-      "description": "강릉 FLOW 인사이트 — 33곳 TourAPI contentid 매핑 (검증 완료). 좌표 비교로 검증된 결과이며, 본 데이터(detailCommon2/detailImage2) 일괄 수집 시 이 파일을 그대로 사용하면 재검색 불필요.",
+      "description": "강릉 FLOW 인사이트 — 31곳 TourAPI contentid 매핑 (검증 완료). 좌표 비교로 검증된 결과이며, 본 데이터(detailCommon2/detailImage2) 일괄 수집 시 이 파일을 그대로 사용하면 재검색 불필요.",
       "confirmed_count": 22,
-      "unregistered_count": 11
+      "unregistered_count": 9
     },
     "places": [
       { "name": "경포해변", "tier": "landmark", "contentid": "128758", "status": "confirmed" },
@@ -15,7 +15,7 @@
       { "name": "선교장", "tier": "landmark", "contentid": "125800", "status": "confirmed" },
       { "name": "강릉대도호부관아", "tier": "landmark", "contentid": "125788", "status": "confirmed", "note": "TourAPI에는 '강릉 임영관 삼문'으로 등록, 좌표로 동일 부지 확인" },
       { "name": "하슬라아트월드", "tier": "landmark", "contentid": "127951", "status": "confirmed" },
-      { "name": "모래시계공원(정동진)", "tier": "landmark", "contentid": "128721", "status": "confirmed" },
+      { "name": "모래시계공원", "tier": "landmark", "contentid": "128721", "status": "confirmed" },
   
       { "name": "강릉월화거리", "tier": "underrated", "contentid": "2588752", "status": "confirmed" },
       { "name": "월화거리야시장", "tier": "underrated", "contentid": "2588752", "status": "confirmed", "note": "강릉월화거리와 같은 거리 안의 금·토 야시장. 같은 contentid로 콘텐츠 공유, 별도 스탬프 위치로 유지" },
@@ -28,13 +28,13 @@
       { "name": "강문해변", "tier": "underrated", "contentid": "585522", "status": "confirmed" },
   
       { "name": "서울양계", "tier": "underrated", "contentid": null, "status": "unregistered" },
-      { "name": "움찐이", "tier": "underrated", "contentid": null, "status": "unregistered" },
+     
       { "name": "대게특별시", "tier": "underrated", "contentid": null, "status": "unregistered" },
       { "name": "교동대게", "tier": "underrated", "contentid": null, "status": "unregistered" },
       { "name": "강릉모루도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
       { "name": "강릉시립중앙도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
       { "name": "초당작은도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
-      { "name": "로하스강릉작은도서관", "tier": "underrated", "contentid": null, "status": "unregistered" },
+      
       { "name": "사천진바위섬", "tier": "underrated", "contentid": null, "status": "unregistered" },
       { "name": "농산물 새벽시장", "tier": "underrated", "contentid": null, "status": "unregistered" },
       { "name": "중앙성남전통시장", "tier": "underrated", "contentid": null, "status": "unregistered" },
