@@ -119,9 +119,23 @@ export async function confirmVisit(
       { onConflict: 'user_id' }
     )
 
-  if (scoreError) {
-    console.error('user_scores upsert 오류:', scoreError.message)
+    if (scoreError) {
+      console.error('user_scores upsert 오류:', scoreError.message)
+    }
+  
+    // 8. 강릉 마스터 뱃지 판정 — 31곳 전체 방문 시 부여
+    //    badges 테이블 UNIQUE(user_id, badge_code) 제약 + ignoreDuplicates로 중복 방지
+    //    이미 획득한 경우 happened_at은 최초 획득 시점 그대로 유지됨
+    if (distinctPlacesVisited >= 31) {
+      const { error: badgeError } = await admin.from('badges').upsert(
+        { user_id: userId, badge_code: 'gangneung_master', happened_at: happenedAt },
+        { onConflict: 'user_id,badge_code', ignoreDuplicates: true }
+      )
+  
+      if (badgeError) {
+        console.error('badges upsert 오류 (방문/점수 기록 자체는 성공):', badgeError.message)
+      }
+    }
+  
+    return { success: true, xpEarned }
   }
-
-  return { success: true, xpEarned }
-}
