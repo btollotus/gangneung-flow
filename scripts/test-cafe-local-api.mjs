@@ -34,20 +34,19 @@ async function callApi(operation, params = {}) {
 }
 
 async function main() {
-  // 1. 카페 목록 조회
-  await callApi("getCafeList", {
-    pageNo: 1,
-    numOfRows: 10,
-    dataType: "JSON",
-  });
-
-  // 2. 로컬음식점 목록 조회
-  await callApi("getLocalList", {
-    pageNo: 1,
-    numOfRows: 10,
-    dataType: "JSON",
-  });
-}
+    // 1. 카페 목록 조회
+    await callApi("getCafeList", {
+      pageNo: 1,
+      numOfRows: 10,
+      type: "json",
+    });
+    // 2. 로컬음식점 목록 조회
+    await callApi("getLocalList", {
+      pageNo: 1,
+      numOfRows: 10,
+      type: "json",
+    });
+  }
 
 main().catch((err) => {
   console.error("❌ 에러 발생:", err);
