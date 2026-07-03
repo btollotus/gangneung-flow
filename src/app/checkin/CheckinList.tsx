@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
+import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
 
 type LocationState =
   | { status: 'loading' }
@@ -34,10 +35,16 @@ function haversineDistanceMeters(
 }
 
 export default function CheckinList({ places }: { places: CheckinPlace[] }) {
-    const [location, setLocation] = useState<LocationState>({ status: 'loading' })
-    const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
-    const [confirmingId, setConfirmingId] = useState<string | null>(null)
-    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [location, setLocation] = useState<LocationState>({ status: 'loading' })
+  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // 근처 주차장 — 카드별 펼침/캐시/로딩/에러 상태 (체크인 로직과 독립적으로 관리)
+  const [expandedParkingId, setExpandedParkingId] = useState<string | null>(null)
+  const [parkingCache, setParkingCache] = useState<Record<string, NearbyParkingLot[]>>({})
+  const [parkingLoadingId, setParkingLoadingId] = useState<string | null>(null)
+  const [parkingErrors, setParkingErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -107,6 +114,38 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
     }
   }
 
+  const handleToggleParking = async (place: CheckinPlace) => {
+    if (expandedParkingId === place.id) {
+      setExpandedParkingId(null)
+      return
+    }
+
+    setExpandedParkingId(place.id)
+
+    // 이미 조회한 적 있으면 재호출하지 않음 (실시간 API 불필요한 재호출 방지)
+    if (parkingCache[place.id]) return
+
+    setParkingLoadingId(place.id)
+    setParkingErrors((prev) => {
+      const next = { ...prev }
+      delete next[place.id]
+      return next
+    })
+
+    try {
+      const lots = await getNearbyParkingLots(place.latitude, place.longitude)
+      setParkingCache((prev) => ({ ...prev, [place.id]: lots }))
+    } catch (err) {
+      console.error('근처 주차장 조회 오류:', err)
+      setParkingErrors((prev) => ({
+        ...prev,
+        [place.id]: '주차장 정보를 가져오지 못했어요.',
+      }))
+    } finally {
+      setParkingLoadingId(null)
+    }
+  }
+
   return (
     <>
       {errorMessage && (
@@ -119,9 +158,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
 
         return (
           <li
-            key={place.id}
-            className="flex items-center justify-between rounded-2xl border border-ink/15 bg-white p-4"
-          >
+          key={place.id}
+          className="rounded-2xl border border-ink/15 bg-white p-4"
+        >
+          <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-ink">{place.name}</p>
               <p className="mt-0.5 text-xs text-ink/50">
@@ -145,7 +185,48 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
             >
               {isConfirmed ? '✅ 확인됨' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
             </button>
-          </li>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleToggleParking(place)}
+            className="mt-3 text-xs font-medium text-ink/50 underline underline-offset-2"
+          >
+            {expandedParkingId === place.id ? '🅿️ 근처 주차장 접기' : '🅿️ 근처 주차장 보기'}
+          </button>
+
+          {expandedParkingId === place.id && (
+            <div className="mt-2 space-y-2 border-t border-ink/10 pt-3">
+              {parkingLoadingId === place.id && (
+                <p className="text-xs text-ink/40">주차장 정보를 불러오는 중...</p>
+              )}
+
+              {parkingErrors[place.id] && (
+                <p className="text-xs text-coral">{parkingErrors[place.id]}</p>
+              )}
+
+              {parkingLoadingId !== place.id &&
+                !parkingErrors[place.id] &&
+                parkingCache[place.id]?.length === 0 && (
+                  <p className="text-xs text-ink/40">반경 500m 이내 주차장이 없어요.</p>
+                )}
+
+              {parkingCache[place.id]?.map((lot) => (
+                <div key={lot.prkId} className="rounded-xl bg-sand/60 p-2.5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-ink">{lot.name}</p>
+                    <p className="text-[10px] text-ink/40">{lot.distanceMeters}m</p>
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-ink/50">
+                    {lot.totalLots != null && lot.availLots != null
+                      ? `잔여 ${lot.availLots} / ${lot.totalLots}면`
+                      : '실시간 정보 없음'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </li>
         )
       })}
       </ul>
