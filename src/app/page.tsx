@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import CctvViewer from './components/CctvViewer'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
 
@@ -65,7 +66,16 @@ export default async function Home() {
         </h1>
         <p className="mt-4 max-w-sm text-sm text-sand/80">
           익숙한 명소부터 동네 골목까지 — 31곳을 채워가며 강릉을 새로 만나보세요.
-        </p>
+          </p>
+      </section>
+
+      {/* 실시간 강릉 */}
+      <section className="px-6 pt-10 sm:px-10">
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-lg font-bold">🎥 지금 경포해변은?</h2>
+          <span className="text-xs text-ink/40">실시간 CCTV</span>
+        </div>
+        <CctvViewer />
       </section>
 
       {/* 장소 미리보기 */}
