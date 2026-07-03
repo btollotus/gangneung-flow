@@ -46,6 +46,9 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
   const [parkingLoadingId, setParkingLoadingId] = useState<string | null>(null)
   const [parkingErrors, setParkingErrors] = useState<Record<string, string>>({})
 
+    // 주소 복사 피드백 (장소/주차장 공용, key로 구분)
+    const [copiedKey, setCopiedKey] = useState<string | null>(null)
+
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocation({ status: 'error', message: '이 기기에서는 위치 기능을 사용할 수 없어요.' })
@@ -146,6 +149,18 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
     }
   }
 
+  const handleCopyAddress = async (key: string, address: string) => {
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopiedKey(key)
+      setTimeout(() => {
+        setCopiedKey((prev) => (prev === key ? null : prev))
+      }, 1500)
+    } catch (err) {
+      console.error('주소 복사 오류:', err)
+    }
+  }
+
   return (
     <>
       {errorMessage && (
@@ -162,14 +177,28 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
           className="rounded-2xl border border-ink/15 bg-white p-4"
         >
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-ink">{place.name}</p>
-              <p className="mt-0.5 text-xs text-ink/50">
-                {inRange
-                  ? `${Math.round(place.distance)}m · 체크인 가능`
-                  : `${Math.round(place.distance)}m 더 가까이 가주세요`}
-              </p>
-            </div>
+          <div>
+                <p className="text-sm font-semibold text-ink">{place.name}</p>
+                <p className="mt-0.5 text-xs text-ink/50">
+                  {inRange
+                    ? `${Math.round(place.distance)}m · 체크인 가능`
+                    : `${Math.round(place.distance)}m 더 가까이 가주세요`}
+                </p>
+                {place.address && (
+                  <button
+                    type="button"
+                    onClick={() => handleCopyAddress(`place:${place.id}`, place.address!)}
+                    className="mt-1 flex max-w-[200px] items-center gap-1 text-left text-[11px] text-ink/40"
+                  >
+                    <span className="truncate underline decoration-dotted underline-offset-2">
+                      {place.address}
+                    </span>
+                    <span className="shrink-0">
+                      {copiedKey === `place:${place.id}` ? '✅' : '📋'}
+                    </span>
+                  </button>
+                )}
+              </div>
 
             <button
               type="button"
@@ -211,19 +240,33 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                   <p className="text-xs text-ink/40">반경 500m 이내 주차장이 없어요.</p>
                 )}
 
-              {parkingCache[place.id]?.map((lot) => (
-                <div key={lot.prkId} className="rounded-xl bg-sand/60 p-2.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-ink">{lot.name}</p>
-                    <p className="text-[10px] text-ink/40">{lot.distanceMeters}m</p>
+{parkingCache[place.id]?.map((lot) => (
+                  <div key={lot.prkId} className="rounded-xl bg-sand/60 p-2.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-ink">{lot.name}</p>
+                      <p className="text-[10px] text-ink/40">{lot.distanceMeters}m</p>
+                    </div>
+                    <p className="mt-0.5 text-[11px] text-ink/50">
+                      {lot.totalLots != null && lot.availLots != null
+                        ? `잔여 ${lot.availLots} / ${lot.totalLots}면`
+                        : '실시간 정보 없음'}
+                    </p>
+                    {lot.address && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopyAddress(`lot:${lot.prkId}`, lot.address!)}
+                        className="mt-1 flex max-w-full items-center gap-1 text-left text-[10px] text-ink/40"
+                      >
+                        <span className="truncate underline decoration-dotted underline-offset-2">
+                          {lot.address}
+                        </span>
+                        <span className="shrink-0">
+                          {copiedKey === `lot:${lot.prkId}` ? '✅' : '📋'}
+                        </span>
+                      </button>
+                    )}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-ink/50">
-                    {lot.totalLots != null && lot.availLots != null
-                      ? `잔여 ${lot.availLots} / ${lot.totalLots}면`
-                      : '실시간 정보 없음'}
-                  </p>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </li>

@@ -9,9 +9,10 @@ export type CheckinPlace = {
   base_xp: number
   latitude: number
   longitude: number
+  address: string | null
 }
 
-const SELECT_FIELDS = 'id, name, tier, category, base_xp, latitude, longitude'
+const SELECT_FIELDS = 'id, name, tier, category, base_xp, latitude, longitude, address'
 
 export default async function CheckinPage() {
   const supabase = await createClient()
