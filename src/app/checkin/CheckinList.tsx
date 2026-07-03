@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Copy } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
@@ -188,14 +189,14 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                   <button
                     type="button"
                     onClick={() => handleCopyAddress(`place:${place.id}`, place.address!)}
-                    className="mt-1 flex max-w-[200px] items-center gap-1 text-left text-[11px] text-ink/40"
+                    className={`mt-1 flex max-w-[200px] items-center gap-1 text-left text-[11px] transition-colors ${
+                      copiedKey === `place:${place.id}` ? 'text-seafoam' : 'text-ink/40'
+                    }`}
                   >
                     <span className="truncate underline decoration-dotted underline-offset-2">
                       {place.address}
                     </span>
-                    <span className="shrink-0">
-                      {copiedKey === `place:${place.id}` ? '✅' : '📋'}
-                    </span>
+                    <Copy size={11} strokeWidth={1.8} className="shrink-0" />
                   </button>
                 )}
               </div>
@@ -255,14 +256,14 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                       <button
                         type="button"
                         onClick={() => handleCopyAddress(`lot:${lot.prkId}`, lot.address!)}
-                        className="mt-1 flex max-w-full items-center gap-1 text-left text-[10px] text-ink/40"
+                        className={`mt-1 flex max-w-full items-center gap-1 text-left text-[10px] transition-colors ${
+                          copiedKey === `lot:${lot.prkId}` ? 'text-seafoam' : 'text-ink/40'
+                        }`}
                       >
                         <span className="truncate underline decoration-dotted underline-offset-2">
                           {lot.address}
                         </span>
-                        <span className="shrink-0">
-                          {copiedKey === `lot:${lot.prkId}` ? '✅' : '📋'}
-                        </span>
+                        <Copy size={10} strokeWidth={1.8} className="shrink-0" />
                       </button>
                     )}
                   </div>
