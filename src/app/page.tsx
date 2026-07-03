@@ -72,7 +72,8 @@ export default async function Home() {
       {/* 실시간 강릉 */}
       <section className="px-6 pt-10 sm:px-10">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-lg font-bold">🎥 지금 경포해변은?</h2>
+        <h2 className="text-lg font-bold">🎥 지금 강릉 바다는?</h2>
+
           <span className="text-xs text-ink/40">실시간 CCTV</span>
         </div>
         <CctvViewer />
