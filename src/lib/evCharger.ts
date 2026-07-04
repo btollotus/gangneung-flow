@@ -1,6 +1,8 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getRegionFromCoords } from "@/lib/kakaoRegion";
+import { resolveZcode } from "@/lib/zcode";
 
 const SERVICE_KEY = process.env.GN_ITS_API_KEY;
 const BASE = "https://apis.data.go.kr/B552584/EvCharger";
@@ -237,4 +239,114 @@ export async function getNearestChargerFallback(
   }
 
   return nearest;
+}
+
+// 강원 외 지역은 DB에 데이터가 없으므로, 실시간 API로 해당 시/도만 조회한다.
+// 강릉(강원, zcode=51)은 기존 getNearbyChargers(DB 기반, 더 빠름)를 그대로 사용.
+export async function getChargersByLocation(
+  lat: number,
+  lng: number
+): Promise<{ zcodeResolved: boolean; chargers: NearbyChargerStation[] }> {
+  const region = await getRegionFromCoords(lat, lng);
+
+  if (!region) {
+    return { zcodeResolved: false, chargers: [] };
+  }
+
+  const zcode = resolveZcode(region.region1, region.region2);
+
+  if (zcode === null) {
+    return { zcodeResolved: false, chargers: [] };
+  }
+
+  // 강원 지역은 기존 DB 기반 함수가 더 빠르고 이미 검증되어 있으므로 그대로 재사용
+  if (zcode === 51) {
+    const chargers = await getNearbyChargers(lat, lng, 5000);
+    return { zcodeResolved: true, chargers };
+  }
+
+  if (!SERVICE_KEY) {
+    console.error("evCharger.ts: GN_ITS_API_KEY가 설정되지 않았습니다.");
+    return { zcodeResolved: true, chargers: [] };
+  }
+
+  try {
+    const infoUrl = `${BASE}/getChargerInfo?serviceKey=${SERVICE_KEY}&pageNo=1&numOfRows=9999&zcode=${zcode}&dataType=JSON`;
+    const res = await fetch(infoUrl, { cache: "no-store" });
+    const text = await res.text();
+
+    if (res.status !== 200) {
+      console.error(
+        `evCharger.ts: getChargerInfo(zcode=${zcode}) 요청 실패 (상태 코드 ${res.status}): ${text}`
+      );
+      return { zcodeResolved: true, chargers: [] };
+    }
+
+    const json = JSON.parse(text);
+
+    if (json.resultCode !== "00") {
+      console.error(
+        `evCharger.ts: getChargerInfo(zcode=${zcode}) 응답 오류: ${json.resultMsg ?? "알 수 없는 오류"}`
+      );
+      return { zcodeResolved: true, chargers: [] };
+    }
+
+    const items = json.items?.item ?? [];
+
+    if (items.length === 0) {
+      // API 자체는 정상이나 해당 지역 데이터가 없는 경우
+      // (2026-07-04 확인: zcode=46(전라남도)이 이 상태 — 통합 전 코드
+      // 체계 과도기로 추정. 에러가 아닌 정상적인 "데이터 없음"으로 처리)
+      return { zcodeResolved: true, chargers: [] };
+    }
+
+    const withDistance = items
+      .filter((i: { lat?: string; lng?: string }) => i.lat && i.lng)
+      .map((i: Record<string, string>) => ({
+        ...i,
+        distanceMeters: haversineMeters(lat, lng, Number(i.lat), Number(i.lng)),
+      }))
+      .sort(
+        (a: { distanceMeters: number }, b: { distanceMeters: number }) =>
+          a.distanceMeters - b.distanceMeters
+      );
+
+    const grouped = new Map<string, NearbyChargerStation>();
+
+    for (const c of withDistance) {
+      const unit: ChargerUnit = {
+        chgerId: c.chgerId,
+        chgerType: c.chgerType,
+        output: c.output,
+        stat: c.stat ?? null,
+        statLabel: c.stat ? STAT_LABELS[c.stat] ?? "상태미확인" : "실시간 정보 없음",
+      };
+
+      const existing = grouped.get(c.statId);
+      if (existing) {
+        existing.chargers.push(unit);
+      } else {
+        grouped.set(c.statId, {
+          statId: c.statId,
+          name: c.statNm,
+          address: c.addr,
+          lat: Number(c.lat),
+          lng: Number(c.lng),
+          parkingFree: c.parkingFree,
+          useTime: c.useTime,
+          distanceMeters: Math.round(c.distanceMeters),
+          chargers: [unit],
+        });
+      }
+    }
+
+    const stations = Array.from(grouped.values())
+      .sort((a, b) => a.distanceMeters - b.distanceMeters)
+      .slice(0, 10);
+
+    return { zcodeResolved: true, chargers: stations };
+  } catch (err) {
+    console.error(`evCharger.ts: getChargerInfo(zcode=${zcode}) 호출 중 예외 발생:`, err);
+    return { zcodeResolved: true, chargers: [] };
+  }
 }

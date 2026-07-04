@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
     getNearbyChargers,
-    getNearestChargerFallback,
+    getChargersByLocation,
     type NearbyChargerStation,
     type ChargerUnit,
   } from "@/lib/evCharger";
@@ -42,7 +42,10 @@ export default function NearbyChargersSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [radius, setRadius] = useState(500);
-  const [fallback, setFallback] = useState<{ name: string; distanceMeters: number } | null>(null);
+  // 강원(강릉) DB 기준 1km 이내에도 없을 때, 실제 위치의 지역(강원 외 포함)으로
+  // 넓게 재조회한 결과 (Kakao 좌표→행정구역 변환 + zcode 기반 실시간 API)
+  const [wideChargers, setWideChargers] = useState<NearbyChargerStation[] | null>(null);
+  const [wideLoading, setWideLoading] = useState(false);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -84,17 +87,23 @@ export default function NearbyChargersSection() {
         if (cancelled) return;
         setChargers(result);
 
-        // 1km 반경까지 넓혀도 결과가 0건이면 반경 제한 없이 최근접 1곳을 찾아 안내한다.
+        // 1km 반경까지 넓혀도 결과가 0건이면, 강릉 DB가 아니라
+        // 실제 위치의 지역(zcode)에 맞는 실시간 API로 재조회한다.
         if (result.length === 0 && radius >= 1000) {
-          getNearestChargerFallback(location.latitude, location.longitude)
-            .then((nearest) => {
-              if (!cancelled) setFallback(nearest);
+          setWideLoading(true);
+          getChargersByLocation(location.latitude, location.longitude)
+            .then(({ chargers: wide }) => {
+              if (!cancelled) setWideChargers(wide);
             })
             .catch((err) => {
-              console.error("최근접 충전소 fallback 조회 오류:", err);
+              console.error("위치 기반 충전소 조회 오류:", err);
+              if (!cancelled) setWideChargers([]);
+            })
+            .finally(() => {
+              if (!cancelled) setWideLoading(false);
             });
         } else {
-          setFallback(null);
+          setWideChargers(null);
         }
       })
       .catch((err) => {
@@ -149,19 +158,56 @@ export default function NearbyChargersSection() {
         </div>
       );
     }
-    if (fallback) {
-        const distanceLabel =
-          fallback.distanceMeters >= 1000
-            ? `${(fallback.distanceMeters / 1000).toFixed(1)}km`
-            : `${fallback.distanceMeters}m`;
+    if (wideLoading) {
+        return <p className="text-sm text-ink/40">주변 지역 충전소를 찾는 중...</p>;
+      }
+  
+      if (wideChargers && wideChargers.length > 0) {
         return (
-          <p className="text-sm text-ink/40">
-            1km 이내에는 충전소가 없어요. 가장 가까운 충전소는{" "}
-            <span className="font-medium text-ink/60">{distanceLabel}</span> 거리의{" "}
-            <span className="font-medium text-ink/60">{fallback.name}</span>입니다.
-          </p>
+          <div className="space-y-2">
+            <p className="text-xs text-ink/40">
+              1km 이내에는 충전소가 없어 현재 위치 기준으로 가까운 충전소를 보여드려요.
+            </p>
+            {wideChargers.map((station) => (
+              <div
+                key={station.statId}
+                className="rounded-2xl border border-ink/10 bg-white p-3"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-ink">{station.name}</p>
+                  <p className="text-xs text-ink/40">
+                    {station.distanceMeters >= 1000
+                      ? `${(station.distanceMeters / 1000).toFixed(1)}km`
+                      : `${station.distanceMeters}m`}
+                  </p>
+                </div>
+                <div className="mt-1 space-y-0.5">
+                  {summarizeChargerUnits(station.chargers).map((group) => (
+                    <div key={group.statLabel} className="flex items-center gap-1.5">
+                      <span
+                        className={`inline-block h-1.5 w-1.5 rounded-full ${
+                          group.stat === "1"
+                            ? "bg-seafoam"
+                            : group.stat === "2"
+                            ? "bg-coral"
+                            : group.stat === "3"
+                            ? "bg-ink/30"
+                            : "bg-ink/15"
+                        }`}
+                      />
+                      <p className="text-xs text-ink/50">
+                        {group.statLabel}
+                        {group.count > 1 ? ` × ${group.count}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         );
       }
+  
       return <p className="text-sm text-ink/40">1km 이내에도 충전소가 없어요.</p>;
   }
 
