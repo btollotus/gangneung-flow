@@ -48,7 +48,7 @@ function haversineMeters(
 
 // ⚠️ getChargerStatus는 zscode(시/군) 미지원, zcode(도)만 지원 — 강원도 전체를 받아온 뒤 클라이언트에서 매칭한다.
 // (2026-07-04 확인: 강원도 전체 totalCount=831건, 한 번의 호출로 전부 수신 가능한 크기)
-async function fetchRealtimeStatus(): Promise
+async function fetchRealtimeStatus(): Promise<
   Map<string, { stat: string; statUpdDt: string }>
 > {
   const map = new Map<string, { stat: string; statUpdDt: string }>();
