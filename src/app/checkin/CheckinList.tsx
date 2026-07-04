@@ -39,10 +39,7 @@ function haversineDistanceMeters(
 // 같은 충전소 안에서 출력(kW)+상태가 동일한 충전기 유닛을 하나로 묶어 개수만 표시한다.
 // (충전기 대수가 많은 충전소에서 동일한 줄이 반복 표시되던 문제 정리, 2026-07-04)
 function summarizeChargerUnits(units: ChargerUnit[]) {
-  const map = new Map
-    string,
-    { output: string | null; statLabel: string; stat: string | null; count: number }
-  >()
+  const map = new Map<string, { output: string | null; statLabel: string; stat: string | null; count: number }>()
 
   for (const unit of units) {
     const key = `${unit.output ?? ''}_${unit.statLabel}`
