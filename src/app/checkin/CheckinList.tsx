@@ -5,7 +5,7 @@ import { Copy } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
-import { getNearbyChargers, type NearbyChargerStation } from '@/lib/evCharger'
+import { getNearbyChargers, type NearbyChargerStation, type ChargerUnit } from '@/lib/evCharger'
 
 type LocationState =
   | { status: 'loading' }
@@ -34,6 +34,32 @@ function haversineDistanceMeters(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
   return R * c
+}
+
+// 같은 충전소 안에서 출력(kW)+상태가 동일한 충전기 유닛을 하나로 묶어 개수만 표시한다.
+// (충전기 대수가 많은 충전소에서 동일한 줄이 반복 표시되던 문제 정리, 2026-07-04)
+function summarizeChargerUnits(units: ChargerUnit[]) {
+  const map = new Map
+    string,
+    { output: string | null; statLabel: string; stat: string | null; count: number }
+  >()
+
+  for (const unit of units) {
+    const key = `${unit.output ?? ''}_${unit.statLabel}`
+    const existing = map.get(key)
+    if (existing) {
+      existing.count += 1
+    } else {
+      map.set(key, {
+        output: unit.output,
+        statLabel: unit.statLabel,
+        stat: unit.stat,
+        count: 1,
+      })
+    }
+  }
+
+  return Array.from(map.values())
 }
 
 export default function CheckinList({ places }: { places: CheckinPlace[] }) {
@@ -340,22 +366,26 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                         <p className="text-[10px] text-ink/40">{station.distanceMeters}m</p>
                       </div>
                       <div className="mt-1 space-y-0.5">
-                        {station.chargers.map((unit) => (
-                          <div key={unit.chgerId} className="flex items-center gap-1.5">
+                      {summarizeChargerUnits(station.chargers).map((group) => (
+                          <div
+                            key={`${group.output ?? ''}_${group.statLabel}`}
+                            className="flex items-center gap-1.5"
+                          >
                             <span
                               className={`inline-block h-1.5 w-1.5 rounded-full ${
-                                unit.stat === '2'
+                                group.stat === '2'
                                   ? 'bg-seafoam'
-                                  : unit.stat === '3'
+                                  : group.stat === '3'
                                   ? 'bg-coral'
-                                  : unit.stat === '4'
+                                  : group.stat === '4'
                                   ? 'bg-ink/30'
                                   : 'bg-ink/15'
                               }`}
                             />
                             <p className="text-[11px] text-ink/50">
-                              {unit.statLabel}
-                              {unit.output ? ` · ${unit.output}kW` : ''}
+                              {group.statLabel}
+                              {group.output ? ` · ${group.output}kW` : ''}
+                              {group.count > 1 ? ` × ${group.count}` : ''}
                             </p>
                           </div>
                         ))}
