@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getNearbyChargers, type NearbyChargerStation, type ChargerUnit } from "@/lib/evCharger";
+import {
+    getNearbyChargers,
+    getNearestChargerFallback,
+    type NearbyChargerStation,
+    type ChargerUnit,
+  } from "@/lib/evCharger";
 
 type LocationState =
   | { status: "loading" }
@@ -37,6 +42,7 @@ export default function NearbyChargersSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [radius, setRadius] = useState(500);
+  const [fallback, setFallback] = useState<{ name: string; distanceMeters: number } | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -75,7 +81,21 @@ export default function NearbyChargersSection() {
 
     getNearbyChargers(location.latitude, location.longitude, radius)
       .then((result) => {
-        if (!cancelled) setChargers(result);
+        if (cancelled) return;
+        setChargers(result);
+
+        // 1km 반경까지 넓혀도 결과가 0건이면 반경 제한 없이 최근접 1곳을 찾아 안내한다.
+        if (result.length === 0 && radius >= 1000) {
+          getNearestChargerFallback(location.latitude, location.longitude)
+            .then((nearest) => {
+              if (!cancelled) setFallback(nearest);
+            })
+            .catch((err) => {
+              console.error("최근접 충전소 fallback 조회 오류:", err);
+            });
+        } else {
+          setFallback(null);
+        }
       })
       .catch((err) => {
         console.error("근처 충전소 조회 오류:", err);
@@ -129,7 +149,20 @@ export default function NearbyChargersSection() {
         </div>
       );
     }
-    return <p className="text-sm text-ink/40">1km 이내에도 충전소가 없어요.</p>;
+    if (fallback) {
+        const distanceLabel =
+          fallback.distanceMeters >= 1000
+            ? `${(fallback.distanceMeters / 1000).toFixed(1)}km`
+            : `${fallback.distanceMeters}m`;
+        return (
+          <p className="text-sm text-ink/40">
+            1km 이내에는 충전소가 없어요. 가장 가까운 충전소는{" "}
+            <span className="font-medium text-ink/60">{distanceLabel}</span> 거리의{" "}
+            <span className="font-medium text-ink/60">{fallback.name}</span>입니다.
+          </p>
+        );
+      }
+      return <p className="text-sm text-ink/40">1km 이내에도 충전소가 없어요.</p>;
   }
 
   return (

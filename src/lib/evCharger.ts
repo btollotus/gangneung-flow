@@ -193,3 +193,48 @@ export async function getNearbyChargers(
     (a, b) => a.distanceMeters - b.distanceMeters
   );
 }
+
+// 반경 내 결과가 0건일 때 노출할 최근접 1곳 fallback.
+// getNearbyChargers와 달리 BOX_DELTA/radius 필터 없이 전체 테이블을 대상으로 한다.
+// (2026-07-04 추가 — 기존 getNearbyChargers 로직은 변경하지 않음)
+export interface NearestChargerFallback {
+  statId: string;
+  name: string;
+  distanceMeters: number;
+}
+
+export async function getNearestChargerFallback(
+  lat: number,
+  lng: number
+): Promise<NearestChargerFallback | null> {
+  const admin = createAdminClient();
+
+  const { data: chargers, error } = await admin
+    .from("ev_chargers")
+    .select("stat_id, stat_nm, lat, lng");
+
+  if (error) {
+    console.error("evCharger.ts: getNearestChargerFallback 조회 오류:", error.message);
+    return null;
+  }
+
+  if (!chargers || chargers.length === 0) {
+    return null;
+  }
+
+  let nearest: NearestChargerFallback | null = null;
+
+  for (const c of chargers) {
+    if (c.lat == null || c.lng == null) continue;
+    const distanceMeters = haversineMeters(lat, lng, Number(c.lat), Number(c.lng));
+    if (!nearest || distanceMeters < nearest.distanceMeters) {
+      nearest = {
+        statId: c.stat_id,
+        name: c.stat_nm,
+        distanceMeters: Math.round(distanceMeters),
+      };
+    }
+  }
+
+  return nearest;
+}
