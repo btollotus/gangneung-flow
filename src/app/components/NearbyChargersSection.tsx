@@ -37,6 +37,7 @@ export default function NearbyChargersSection() {
   const [chargers, setChargers] = useState<NearbyChargerStation[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [radius, setRadius] = useState(500);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -73,7 +74,7 @@ export default function NearbyChargersSection() {
     setLoading(true);
     setError(null);
 
-    getNearbyChargers(location.latitude, location.longitude)
+    getNearbyChargers(location.latitude, location.longitude, radius)
       .then((result) => {
         if (!cancelled) setChargers(result);
       })
@@ -88,7 +89,7 @@ export default function NearbyChargersSection() {
     return () => {
       cancelled = true;
     };
-  }, [location]);
+  }, [location, radius]);
 
   if (location.status === "loading") {
     return <p className="text-sm text-ink/40">📍 위치를 확인하는 중이에요...</p>;
@@ -115,7 +116,21 @@ export default function NearbyChargersSection() {
   }
 
   if (!chargers || chargers.length === 0) {
-    return <p className="text-sm text-ink/40">반경 500m 이내 충전소가 없어요.</p>;
+    if (radius < 1000) {
+      return (
+        <div className="space-y-1.5">
+          <p className="text-sm text-ink/40">반경 500m 이내 충전소가 없어요.</p>
+          <button
+            type="button"
+            onClick={() => setRadius(1000)}
+            className="text-sm font-medium text-seafoam underline underline-offset-2"
+          >
+            ⚡ 1km로 넓혀서 보기
+          </button>
+        </div>
+      );
+    }
+    return <p className="text-sm text-ink/40">1km 이내에도 충전소가 없어요.</p>;
   }
 
   return (

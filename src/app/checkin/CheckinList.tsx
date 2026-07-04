@@ -76,6 +76,8 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
   const [chargerCache, setChargerCache] = useState<Record<string, NearbyChargerStation[]>>({})
   const [chargerLoadingId, setChargerLoadingId] = useState<string | null>(null)
   const [chargerErrors, setChargerErrors] = useState<Record<string, string>>({})
+  const [chargerRadiusExpanded, setChargerRadiusExpanded] = useState<Set<string>>(new Set())
+  const [chargerExpandLoading, setChargerExpandLoading] = useState<string | null>(null)
 
     // 주소 복사 피드백 (장소/주차장/충전소 공용, key로 구분)
     const [copiedKey, setCopiedKey] = useState<string | null>(null)
@@ -208,6 +210,24 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
       }))
     } finally {
       setChargerLoadingId(null)
+    }
+  }
+
+  const handleExpandChargerRadius = async (place: CheckinPlace) => {
+    setChargerExpandLoading(place.id)
+
+    try {
+      const chargers = await getNearbyChargers(place.latitude, place.longitude, 1000)
+      setChargerCache((prev) => ({ ...prev, [place.id]: chargers }))
+      setChargerRadiusExpanded((prev) => new Set(prev).add(place.id))
+    } catch (err) {
+      console.error('충전소 반경 확장 조회 오류:', err)
+      setChargerErrors((prev) => ({
+        ...prev,
+        [place.id]: '충전소 정보를 가져오지 못했어요.',
+      }))
+    } finally {
+      setChargerExpandLoading(null)
     }
   }
 
@@ -350,10 +370,28 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                     <p className="text-xs text-coral">{chargerErrors[place.id]}</p>
                   )}
     
+    {chargerLoadingId !== place.id &&
+                    !chargerErrors[place.id] &&
+                    chargerCache[place.id]?.length === 0 &&
+                    !chargerRadiusExpanded.has(place.id) && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-ink/40">반경 500m 이내 충전소가 없어요.</p>
+                        <button
+                          type="button"
+                          onClick={() => handleExpandChargerRadius(place)}
+                          disabled={chargerExpandLoading === place.id}
+                          className="text-xs font-medium text-seafoam underline underline-offset-2 disabled:opacity-60"
+                        >
+                          {chargerExpandLoading === place.id ? '조회 중...' : '⚡ 1km로 넓혀서 보기'}
+                        </button>
+                      </div>
+                    )}
+
                   {chargerLoadingId !== place.id &&
                     !chargerErrors[place.id] &&
-                    chargerCache[place.id]?.length === 0 && (
-                      <p className="text-xs text-ink/40">반경 500m 이내 충전소가 없어요.</p>
+                    chargerCache[place.id]?.length === 0 &&
+                    chargerRadiusExpanded.has(place.id) && (
+                      <p className="text-xs text-ink/40">1km 이내에도 충전소가 없어요.</p>
                     )}
     
     {chargerCache[place.id]?.map((station) => (
