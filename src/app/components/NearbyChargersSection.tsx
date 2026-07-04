@@ -9,19 +9,18 @@ type LocationState =
   | { status: "error"; message: string }
   | { status: "ready"; latitude: number; longitude: number };
 
-// 같은 충전소 안에서 출력(kW)+상태가 동일한 충전기 유닛을 하나로 묶어 개수만 표시한다.
-// (CheckinList.tsx와 동일 로직, 2026-07-04)
+// 같은 충전소 안에서 상태가 동일한 충전기 유닛을 하나로 묶어 개수만 표시한다.
+// (2026-07-04: KEPCO API 전환으로 output(kW) 정보가 없어져 상태 기준으로만 그룹핑)
 function summarizeChargerUnits(units: ChargerUnit[]) {
-    const map = new Map<string, { output: string | null; statLabel: string; stat: string | null; count: number }>();
+    const map = new Map<string, { statLabel: string; stat: string | null; count: number }>();
 
   for (const unit of units) {
-    const key = `${unit.output ?? ""}_${unit.statLabel}`;
+    const key = unit.statLabel;
     const existing = map.get(key);
     if (existing) {
       existing.count += 1;
     } else {
       map.set(key, {
-        output: unit.output,
         statLabel: unit.statLabel,
         stat: unit.stat,
         count: 1,
@@ -147,23 +146,22 @@ export default function NearbyChargersSection() {
           <div className="mt-1 space-y-0.5">
           {summarizeChargerUnits(station.chargers).map((group) => (
               <div
-                key={`${group.output ?? ""}_${group.statLabel}`}
+                key={group.statLabel}
                 className="flex items-center gap-1.5"
               >
                 <span
                   className={`inline-block h-1.5 w-1.5 rounded-full ${
-                    group.stat === "2"
+                    group.stat === "1"
                       ? "bg-seafoam"
-                      : group.stat === "3"
+                      : group.stat === "2"
                       ? "bg-coral"
-                      : group.stat === "4"
+                      : group.stat === "3"
                       ? "bg-ink/30"
                       : "bg-ink/15"
                   }`}
                 />
                 <p className="text-xs text-ink/50">
                   {group.statLabel}
-                  {group.output ? ` · ${group.output}kW` : ""}
                   {group.count > 1 ? ` × ${group.count}` : ""}
                 </p>
               </div>
