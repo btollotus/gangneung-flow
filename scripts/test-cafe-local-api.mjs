@@ -38,13 +38,13 @@ async function main() {
     await callApi("getCafeList", {
       pageNo: 1,
       numOfRows: 10,
-      type: "json",
+      type: "xml",
     });
     // 2. 로컬음식점 목록 조회
     await callApi("getLocalList", {
       pageNo: 1,
       numOfRows: 10,
-      type: "json",
+      type: "xml",
     });
   }
 

@@ -5,6 +5,7 @@ import { Copy } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
+import { getNearbyChargers, type NearbyCharger } from '@/lib/evCharger'
 
 type LocationState =
   | { status: 'loading' }
@@ -47,7 +48,13 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
   const [parkingLoadingId, setParkingLoadingId] = useState<string | null>(null)
   const [parkingErrors, setParkingErrors] = useState<Record<string, string>>({})
 
-    // 주소 복사 피드백 (장소/주차장 공용, key로 구분)
+  // 근처 충전소 — 카드별 펼침/캐시/로딩/에러 상태 (주차장 로직과 동일한 패턴, 완전히 독립적으로 관리)
+  const [expandedChargerId, setExpandedChargerId] = useState<string | null>(null)
+  const [chargerCache, setChargerCache] = useState<Record<string, NearbyCharger[]>>({})
+  const [chargerLoadingId, setChargerLoadingId] = useState<string | null>(null)
+  const [chargerErrors, setChargerErrors] = useState<Record<string, string>>({})
+
+    // 주소 복사 피드백 (장소/주차장/충전소 공용, key로 구분)
     const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
   useEffect(() => {
@@ -147,6 +154,37 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
       }))
     } finally {
       setParkingLoadingId(null)
+    }
+  }
+
+  const handleToggleCharger = async (place: CheckinPlace) => {
+    if (expandedChargerId === place.id) {
+      setExpandedChargerId(null)
+      return
+    }
+
+    setExpandedChargerId(place.id)
+
+    if (chargerCache[place.id]) return
+
+    setChargerLoadingId(place.id)
+    setChargerErrors((prev) => {
+      const next = { ...prev }
+      delete next[place.id]
+      return next
+    })
+
+    try {
+      const chargers = await getNearbyChargers(place.latitude, place.longitude)
+      setChargerCache((prev) => ({ ...prev, [place.id]: chargers }))
+    } catch (err) {
+      console.error('근처 충전소 조회 오류:', err)
+      setChargerErrors((prev) => ({
+        ...prev,
+        [place.id]: '충전소 정보를 가져오지 못했어요.',
+      }))
+    } finally {
+      setChargerLoadingId(null)
     }
   }
 
@@ -268,11 +306,87 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                     )}
                   </div>
                 ))}
-            </div>
-          )}
-        </li>
-        )
-      })}
+                </div>
+              )}
+    
+              <button
+                type="button"
+                onClick={() => handleToggleCharger(place)}
+                className="mt-2 text-xs font-medium text-ink/50 underline underline-offset-2"
+              >
+                {expandedChargerId === place.id ? '⚡ 근처 충전소 접기' : '⚡ 근처 충전소 보기'}
+              </button>
+    
+              {expandedChargerId === place.id && (
+                <div className="mt-2 space-y-2 border-t border-ink/10 pt-3">
+                  {chargerLoadingId === place.id && (
+                    <p className="text-xs text-ink/40">충전소 정보를 불러오는 중...</p>
+                  )}
+    
+                  {chargerErrors[place.id] && (
+                    <p className="text-xs text-coral">{chargerErrors[place.id]}</p>
+                  )}
+    
+                  {chargerLoadingId !== place.id &&
+                    !chargerErrors[place.id] &&
+                    chargerCache[place.id]?.length === 0 && (
+                      <p className="text-xs text-ink/40">반경 500m 이내 충전소가 없어요.</p>
+                    )}
+    
+                  {chargerCache[place.id]?.map((charger) => (
+                    <div
+                      key={`${charger.statId}_${charger.chgerId}`}
+                      className="rounded-xl bg-sand/60 p-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-ink">{charger.name}</p>
+                        <p className="text-[10px] text-ink/40">{charger.distanceMeters}m</p>
+                      </div>
+                      <div className="mt-0.5 flex items-center gap-1.5">
+                        <span
+                          className={`inline-block h-1.5 w-1.5 rounded-full ${
+                            charger.stat === '2'
+                              ? 'bg-seafoam'
+                              : charger.stat === '3'
+                              ? 'bg-coral'
+                              : charger.stat === '4'
+                              ? 'bg-ink/30'
+                              : 'bg-ink/15'
+                          }`}
+                        />
+                        <p className="text-[11px] text-ink/50">
+                          {charger.statLabel}
+                          {charger.output ? ` · ${charger.output}kW` : ''}
+                        </p>
+                      </div>
+                      {charger.address && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleCopyAddress(
+                              `charger:${charger.statId}_${charger.chgerId}`,
+                              charger.address!
+                            )
+                          }
+                          className={`mt-1 flex max-w-full items-center gap-1 text-left text-[10px] transition-colors ${
+                            copiedKey === `charger:${charger.statId}_${charger.chgerId}`
+                              ? 'text-seafoam'
+                              : 'text-ink/40'
+                          }`}
+                        >
+                          <span className="truncate underline decoration-dotted underline-offset-2">
+                            {charger.address}
+                          </span>
+                          <Copy size={10} strokeWidth={1.8} className="shrink-0" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </li>
+            )
+          })}
       </ul>
     </>
   )
