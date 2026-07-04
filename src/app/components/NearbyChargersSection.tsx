@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getNearbyChargers, type NearbyCharger } from "@/lib/evCharger";
+import { getNearbyChargers, type NearbyChargerStation } from "@/lib/evCharger";
 
 type LocationState =
   | { status: "loading" }
@@ -11,7 +11,7 @@ type LocationState =
 
 export default function NearbyChargersSection() {
   const [location, setLocation] = useState<LocationState>({ status: "loading" });
-  const [chargers, setChargers] = useState<NearbyCharger[] | null>(null);
+  const [chargers, setChargers] = useState<NearbyChargerStation[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,31 +97,35 @@ export default function NearbyChargersSection() {
 
   return (
     <div className="space-y-2">
-      {chargers.map((charger) => (
+      {chargers.map((station) => (
         <div
-          key={`${charger.statId}_${charger.chgerId}`}
+          key={station.statId}
           className="rounded-2xl border border-ink/10 bg-white p-3"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-ink">{charger.name}</p>
-            <p className="text-xs text-ink/40">{charger.distanceMeters}m</p>
+            <p className="text-sm font-semibold text-ink">{station.name}</p>
+            <p className="text-xs text-ink/40">{station.distanceMeters}m</p>
           </div>
-          <div className="mt-1 flex items-center gap-1.5">
-            <span
-              className={`inline-block h-1.5 w-1.5 rounded-full ${
-                charger.stat === "2"
-                  ? "bg-seafoam"
-                  : charger.stat === "3"
-                  ? "bg-coral"
-                  : charger.stat === "4"
-                  ? "bg-ink/30"
-                  : "bg-ink/15"
-              }`}
-            />
-            <p className="text-xs text-ink/50">
-              {charger.statLabel}
-              {charger.output ? ` · ${charger.output}kW` : ""}
-            </p>
+          <div className="mt-1 space-y-0.5">
+            {station.chargers.map((unit) => (
+              <div key={unit.chgerId} className="flex items-center gap-1.5">
+                <span
+                  className={`inline-block h-1.5 w-1.5 rounded-full ${
+                    unit.stat === "2"
+                      ? "bg-seafoam"
+                      : unit.stat === "3"
+                      ? "bg-coral"
+                      : unit.stat === "4"
+                      ? "bg-ink/30"
+                      : "bg-ink/15"
+                  }`}
+                />
+                <p className="text-xs text-ink/50">
+                  {unit.statLabel}
+                  {unit.output ? ` · ${unit.output}kW` : ""}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       ))}

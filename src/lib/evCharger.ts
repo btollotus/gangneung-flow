@@ -12,22 +12,28 @@ const STAT_LABELS: Record<string, string> = {
   "9": "상태미확인",
 };
 
-export interface NearbyCharger {
-  statId: string;
-  chgerId: string;
-  name: string;
-  address: string | null;
-  lat: number;
-  lng: number;
-  chgerType: string | null;
-  output: string | null;
-  parkingFree: string | null;
-  useTime: string | null;
-  distanceMeters: number;
-  stat: string | null;
-  statLabel: string;
-  statUpdDt: string | null;
-}
+// 충전소 하나에 딸린 개별 충전기 1대 (같은 statId 아래 chgerId가 여러 개 있을 수 있음)
+export interface ChargerUnit {
+    chgerId: string;
+    chgerType: string | null;
+    output: string | null;
+    stat: string | null;
+    statLabel: string;
+  }
+  
+  // 충전소 1곳 = 카드 1개. 충전기가 여러 대여도 이름/주소/거리는 한 번만 표시하고
+  // 개별 충전기는 chargers 배열에 묶는다 (같은 주소가 반복 표시되던 문제 해결, 2026-07-04).
+  export interface NearbyChargerStation {
+    statId: string;
+    name: string;
+    address: string | null;
+    lat: number;
+    lng: number;
+    parkingFree: string | null;
+    useTime: string | null;
+    distanceMeters: number;
+    chargers: ChargerUnit[];
+  }
 
 function haversineMeters(
   lat1: number,
@@ -112,7 +118,7 @@ export async function getNearbyChargers(
   lat: number,
   lng: number,
   radiusMeters = 500
-): Promise<NearbyCharger[]> {
+): Promise<NearbyChargerStation[]> {
   const admin = createAdminClient();
 
   const BOX_DELTA = 0.01; // 약 1.1km — Haversine 정밀 필터 전 1차 후보군 축소용
@@ -151,23 +157,39 @@ export async function getNearbyChargers(
 
   const realtime = await fetchRealtimeStatus();
 
-  return withDistance.map((c) => {
+  // 같은 충전소(stat_id) 안의 여러 충전기(chger_id)를 카드 1개로 묶는다
+  // (수정 전에는 충전기 대수만큼 같은 이름/주소가 반복 표시되던 문제 — 2026-07-04 확인)
+  const grouped = new Map<string, NearbyChargerStation>();
+
+  for (const c of withDistance) {
     const rt = realtime.get(`${c.stat_id}_${c.chger_id}`);
-    return {
-      statId: c.stat_id,
+    const unit: ChargerUnit = {
       chgerId: c.chger_id,
-      name: c.stat_nm,
-      address: c.addr,
-      lat: Number(c.lat),
-      lng: Number(c.lng),
       chgerType: c.chger_type,
       output: c.output,
-      parkingFree: c.parking_free,
-      useTime: c.use_time,
-      distanceMeters: Math.round(c.distanceMeters),
       stat: rt?.stat ?? null,
       statLabel: rt?.stat ? STAT_LABELS[rt.stat] ?? "상태미확인" : "실시간 정보 없음",
-      statUpdDt: rt?.statUpdDt ?? null,
     };
-  });
+
+    const existing = grouped.get(c.stat_id);
+    if (existing) {
+      existing.chargers.push(unit);
+    } else {
+      grouped.set(c.stat_id, {
+        statId: c.stat_id,
+        name: c.stat_nm,
+        address: c.addr,
+        lat: Number(c.lat),
+        lng: Number(c.lng),
+        parkingFree: c.parking_free,
+        useTime: c.use_time,
+        distanceMeters: Math.round(c.distanceMeters),
+        chargers: [unit],
+      });
+    }
+  }
+
+  return Array.from(grouped.values()).sort(
+    (a, b) => a.distanceMeters - b.distanceMeters
+  );
 }

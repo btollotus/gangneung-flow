@@ -5,7 +5,7 @@ import { Copy } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
-import { getNearbyChargers, type NearbyCharger } from '@/lib/evCharger'
+import { getNearbyChargers, type NearbyChargerStation } from '@/lib/evCharger'
 
 type LocationState =
   | { status: 'loading' }
@@ -50,7 +50,7 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
 
   // 근처 충전소 — 카드별 펼침/캐시/로딩/에러 상태 (주차장 로직과 동일한 패턴, 완전히 독립적으로 관리)
   const [expandedChargerId, setExpandedChargerId] = useState<string | null>(null)
-  const [chargerCache, setChargerCache] = useState<Record<string, NearbyCharger[]>>({})
+  const [chargerCache, setChargerCache] = useState<Record<string, NearbyChargerStation[]>>({})
   const [chargerLoadingId, setChargerLoadingId] = useState<string | null>(null)
   const [chargerErrors, setChargerErrors] = useState<Record<string, string>>({})
 
@@ -333,49 +333,47 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                       <p className="text-xs text-ink/40">반경 500m 이내 충전소가 없어요.</p>
                     )}
     
-                  {chargerCache[place.id]?.map((charger) => (
-                    <div
-                      key={`${charger.statId}_${charger.chgerId}`}
-                      className="rounded-xl bg-sand/60 p-2.5"
-                    >
+    {chargerCache[place.id]?.map((station) => (
+                    <div key={station.statId} className="rounded-xl bg-sand/60 p-2.5">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-ink">{charger.name}</p>
-                        <p className="text-[10px] text-ink/40">{charger.distanceMeters}m</p>
+                        <p className="text-xs font-semibold text-ink">{station.name}</p>
+                        <p className="text-[10px] text-ink/40">{station.distanceMeters}m</p>
                       </div>
-                      <div className="mt-0.5 flex items-center gap-1.5">
-                        <span
-                          className={`inline-block h-1.5 w-1.5 rounded-full ${
-                            charger.stat === '2'
-                              ? 'bg-seafoam'
-                              : charger.stat === '3'
-                              ? 'bg-coral'
-                              : charger.stat === '4'
-                              ? 'bg-ink/30'
-                              : 'bg-ink/15'
-                          }`}
-                        />
-                        <p className="text-[11px] text-ink/50">
-                          {charger.statLabel}
-                          {charger.output ? ` · ${charger.output}kW` : ''}
-                        </p>
+                      <div className="mt-1 space-y-0.5">
+                        {station.chargers.map((unit) => (
+                          <div key={unit.chgerId} className="flex items-center gap-1.5">
+                            <span
+                              className={`inline-block h-1.5 w-1.5 rounded-full ${
+                                unit.stat === '2'
+                                  ? 'bg-seafoam'
+                                  : unit.stat === '3'
+                                  ? 'bg-coral'
+                                  : unit.stat === '4'
+                                  ? 'bg-ink/30'
+                                  : 'bg-ink/15'
+                              }`}
+                            />
+                            <p className="text-[11px] text-ink/50">
+                              {unit.statLabel}
+                              {unit.output ? ` · ${unit.output}kW` : ''}
+                            </p>
+                          </div>
+                        ))}
                       </div>
-                      {charger.address && (
+                      {station.address && (
                         <button
                           type="button"
                           onClick={() =>
-                            handleCopyAddress(
-                              `charger:${charger.statId}_${charger.chgerId}`,
-                              charger.address!
-                            )
+                            handleCopyAddress(`charger:${station.statId}`, station.address!)
                           }
                           className={`mt-1 flex max-w-full items-center gap-1 text-left text-[10px] transition-colors ${
-                            copiedKey === `charger:${charger.statId}_${charger.chgerId}`
+                            copiedKey === `charger:${station.statId}`
                               ? 'text-seafoam'
                               : 'text-ink/40'
                           }`}
                         >
                           <span className="truncate underline decoration-dotted underline-offset-2">
-                            {charger.address}
+                            {station.address}
                           </span>
                           <Copy size={10} strokeWidth={1.8} className="shrink-0" />
                         </button>
