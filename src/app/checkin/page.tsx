@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import CheckinList from './CheckinList'
+import NearbyChargersSection from '../components/NearbyChargersSection'
+import RefreshButton from '../components/RefreshButton'
 
 export type CheckinPlace = {
   id: string
@@ -35,6 +37,17 @@ export default async function CheckinPage() {
       <div className="mt-6">
         <CheckinList places={(places as CheckinPlace[] | null) ?? []} />
       </div>
+
+      <section className="mt-10">
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-lg font-bold">⚡ 지금 내 주변 충전소</h2>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-ink/40">실시간 상태</span>
+            <RefreshButton />
+          </div>
+        </div>
+        <NearbyChargersSection />
+      </section>
     </main>
   )
 }
