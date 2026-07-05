@@ -4,6 +4,7 @@ import "./globals.css";
 import BottomTabNav from "./components/BottomTabNav";
 import NicknameOnboarding from "./components/NicknameOnboarding";
 import SplashScreen from "./components/SplashScreen";
+import KakaoSdk from "./components/KakaoSdk";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
         <NicknameOnboarding />
         <BottomTabNav />
         <SplashScreen />
+        <KakaoSdk />
       </body>
     </html>
   );

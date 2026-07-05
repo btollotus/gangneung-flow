@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import CctvViewer from './components/CctvViewer'
 import NearbyChargersSection from './components/NearbyChargersSection'
 import RefreshButton from './components/RefreshButton'
+import KakaoShareButton from './components/KakaoShareButton'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
 
@@ -74,6 +75,9 @@ export default async function Home() {
         <p className="mt-3 max-w-sm text-sm text-ink/70">
           익숙한 명소부터 동네 골목까지 — 31곳을 채워가며 강릉을 새로 만나보세요.
         </p>
+        <div className="mt-4">
+          <KakaoShareButton text="강릉 FLOW 인사이트 — 도장 한 칸마다, 강릉의 다른 얼굴을 찍어가요. 익숙한 명소부터 동네 골목까지, 31곳을 채워가며 강릉을 새로 만나보세요." />
+        </div>
       </section>
 
       {/* 실시간 강릉 */}
