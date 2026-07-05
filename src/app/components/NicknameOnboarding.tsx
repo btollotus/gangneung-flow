@@ -12,6 +12,14 @@ export default function NicknameOnboarding() {
 
   useEffect(() => {
     const checkProfile = async () => {
+      if (
+        typeof window !== 'undefined' &&
+        sessionStorage.getItem('nickname_skip') === '1'
+      ) {
+        setLoading(false)
+        return
+      }
+
       const supabase = createClient()
       const { data: userData, error: userError } = await supabase.auth.getUser()
 
@@ -81,6 +89,13 @@ export default function NicknameOnboarding() {
     setSubmitting(false)
   }
 
+  const handleSkip = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('nickname_skip', '1')
+    }
+    setNeedsNickname(false)
+  }
+
   if (loading || !needsNickname) {
     return null
   }
@@ -110,6 +125,14 @@ export default function NicknameOnboarding() {
           className="mt-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
           {submitting ? '저장 중...' : '시작하기'}
+        </button>
+
+        <button
+          onClick={handleSkip}
+          disabled={submitting}
+          className="mt-2 w-full text-center text-xs text-gray-400 underline disabled:opacity-50"
+        >
+          나중에 할게요
         </button>
       </div>
     </div>
