@@ -315,49 +315,39 @@ export async function getChargersByLocation(
           a.distanceMeters - b.distanceMeters
       );
 
-    // 진단용: 이름+주소가 같은데 statId가 다른 경우가 있는지 확인 (2026-07-05)
-    const nameAddrMap = new Map<string, Set<string>>();
+      const grouped = new Map<string, NearbyChargerStation>();
+
+    // 같은 이름+주소인데 statId가 다르게 등록된 경우가 있어(2026-07-05 로그로 확인:
+    // 예 "조리읍행정복지센터" → statId ME20D144, ME21B207 중복) statId 대신
+    // "이름__주소"를 그룹핑 키로 사용해 중복 카드를 하나로 합친다.
+    // 카드에 표시되는 statId 값은 처음 만난 항목의 statId를 그대로 사용한다(React key 용도).
     for (const c of withDistance) {
-      const key = `${c.statNm}__${c.addr}`;
-      if (!nameAddrMap.has(key)) nameAddrMap.set(key, new Set());
-      nameAddrMap.get(key)!.add(c.statId);
-    }
-    for (const [key, statIds] of nameAddrMap) {
-      if (statIds.size > 1) {
-        console.log(
-          `evCharger.ts: [중복의심] "${key}" → statId 목록: ${Array.from(statIds).join(", ")}`
-        );
+        const unit: ChargerUnit = {
+          chgerId: c.chgerId,
+          chgerType: c.chgerType,
+          output: c.output,
+          stat: c.stat ?? null,
+          statLabel: c.stat ? STAT_LABELS[c.stat] ?? "상태미확인" : "실시간 정보 없음",
+        };
+  
+        const groupKey = `${c.statNm}__${c.addr}`;
+        const existing = grouped.get(groupKey);
+        if (existing) {
+          existing.chargers.push(unit);
+        } else {
+          grouped.set(groupKey, {
+            statId: c.statId,
+            name: c.statNm,
+            address: c.addr,
+            lat: Number(c.lat),
+            lng: Number(c.lng),
+            parkingFree: c.parkingFree,
+            useTime: c.useTime,
+            distanceMeters: Math.round(c.distanceMeters),
+            chargers: [unit],
+          });
+        }
       }
-    }
-
-    const grouped = new Map<string, NearbyChargerStation>();
-
-    for (const c of withDistance) {
-      const unit: ChargerUnit = {
-        chgerId: c.chgerId,
-        chgerType: c.chgerType,
-        output: c.output,
-        stat: c.stat ?? null,
-        statLabel: c.stat ? STAT_LABELS[c.stat] ?? "상태미확인" : "실시간 정보 없음",
-      };
-
-      const existing = grouped.get(c.statId);
-      if (existing) {
-        existing.chargers.push(unit);
-      } else {
-        grouped.set(c.statId, {
-          statId: c.statId,
-          name: c.statNm,
-          address: c.addr,
-          lat: Number(c.lat),
-          lng: Number(c.lng),
-          parkingFree: c.parkingFree,
-          useTime: c.useTime,
-          distanceMeters: Math.round(c.distanceMeters),
-          chargers: [unit],
-        });
-      }
-    }
 
     const stations = Array.from(grouped.values())
       .sort((a, b) => a.distanceMeters - b.distanceMeters)
