@@ -315,6 +315,21 @@ export async function getChargersByLocation(
           a.distanceMeters - b.distanceMeters
       );
 
+    // 진단용: 이름+주소가 같은데 statId가 다른 경우가 있는지 확인 (2026-07-05)
+    const nameAddrMap = new Map<string, Set<string>>();
+    for (const c of withDistance) {
+      const key = `${c.statNm}__${c.addr}`;
+      if (!nameAddrMap.has(key)) nameAddrMap.set(key, new Set());
+      nameAddrMap.get(key)!.add(c.statId);
+    }
+    for (const [key, statIds] of nameAddrMap) {
+      if (statIds.size > 1) {
+        console.log(
+          `evCharger.ts: [중복의심] "${key}" → statId 목록: ${Array.from(statIds).join(", ")}`
+        );
+      }
+    }
+
     const grouped = new Map<string, NearbyChargerStation>();
 
     for (const c of withDistance) {
