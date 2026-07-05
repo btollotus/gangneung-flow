@@ -8,6 +8,8 @@ import {
     type NearbyChargerStation,
     type ChargerUnit,
   } from "@/lib/evCharger";
+import { getRegionFromCoords } from "@/lib/kakaoRegion";
+import { resolveZcode } from "@/lib/zcode";
 
   type LocationState =
   | { status: "loading" }
@@ -105,26 +107,48 @@ export default function NearbyChargersSection() {
     setError(null);
 
     getNearbyChargers(location.latitude, location.longitude, radius)
-      .then((result) => {
+      .then(async (result) => {
         if (cancelled) return;
         setChargers(result);
 
-        // 1km 반경까지 넓혀도 결과가 0건이면, 강릉 DB가 아니라
-        // 실제 위치의 지역(zcode)에 맞는 실시간 API로 재조회한다.
-        if (result.length === 0 && radius >= 1000) {
+        if (result.length === 0) {
+          // 강릉(강원) 로컬 DB에 결과가 없을 때, 실제로 강원 지역이 맞는지 먼저 확인한다.
+          // 강원이 아니면 로컬 DB엔 애초에 데이터가 없어 항상 0건이 나오므로,
+          // "1km로 넓혀서 보기" 클릭을 기다리지 않고 바로 전국 API로 조회한다.
+          // 강원 지역(zcode=51)인 경우는 기존 500m→1km 확장 흐름을 그대로 유지한다.
+          // (2026-07-05: 춘향휴게소 등 강릉 밖 실측에서 확인된 문제 — 강원 사용자
+          // 흐름은 변경하지 않음)
+          let outsideGangwon = false;
+          if (radius < 1000) {
+            const region = await getRegionFromCoords(
+              location.latitude,
+              location.longitude
+            );
+            const zcode = region
+              ? resolveZcode(region.region1, region.region2)
+              : null;
+            outsideGangwon = zcode !== null && zcode !== 51;
+          }
+
+          if (cancelled) return;
+
+          if (radius >= 1000 || outsideGangwon) {
             setWideLoading(true);
             setWideLoadingMsgIndex(0);
             getChargersByLocation(location.latitude, location.longitude)
-            .then(({ chargers: wide }) => {
-              if (!cancelled) setWideChargers(wide);
-            })
-            .catch((err) => {
-              console.error("위치 기반 충전소 조회 오류:", err);
-              if (!cancelled) setWideChargers([]);
-            })
-            .finally(() => {
-              if (!cancelled) setWideLoading(false);
-            });
+              .then(({ chargers: wide }) => {
+                if (!cancelled) setWideChargers(wide);
+              })
+              .catch((err) => {
+                console.error("위치 기반 충전소 조회 오류:", err);
+                if (!cancelled) setWideChargers([]);
+              })
+              .finally(() => {
+                if (!cancelled) setWideLoading(false);
+              });
+          } else {
+            setWideChargers(null);
+          }
         } else {
           setWideChargers(null);
         }
