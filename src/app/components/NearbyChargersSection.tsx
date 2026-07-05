@@ -8,11 +8,20 @@ import {
     type ChargerUnit,
   } from "@/lib/evCharger";
 
-type LocationState =
+  type LocationState =
   | { status: "loading" }
   | { status: "denied" }
   | { status: "error"; message: string }
   | { status: "ready"; latitude: number; longitude: number };
+
+// 강원 외 지역 실시간 조회는 API 응답이 50~60초대로 오래 걸릴 수 있어
+// (2026-07-05 확인), 정적 문구 대신 순환 메시지로 진행 중임을 계속 알린다.
+const WIDE_LOADING_MESSAGES = [
+  "주변 지역 충전소를 찾는 중...",
+  "실시간 정보를 확인하고 있어요...",
+  "조금만 더 기다려주세요...",
+  "거의 다 왔어요...",
+];
 
 // 같은 충전소 안에서 상태가 동일한 충전기 유닛을 하나로 묶어 개수만 표시한다.
 // (2026-07-04: KEPCO API 전환으로 output(kW) 정보가 없어져 상태 기준으로만 그룹핑)
@@ -46,6 +55,7 @@ export default function NearbyChargersSection() {
   // 넓게 재조회한 결과 (Kakao 좌표→행정구역 변환 + zcode 기반 실시간 API)
   const [wideChargers, setWideChargers] = useState<NearbyChargerStation[] | null>(null);
   const [wideLoading, setWideLoading] = useState(false);
+  const [wideLoadingMsgIndex, setWideLoadingMsgIndex] = useState(0);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -90,8 +100,9 @@ export default function NearbyChargersSection() {
         // 1km 반경까지 넓혀도 결과가 0건이면, 강릉 DB가 아니라
         // 실제 위치의 지역(zcode)에 맞는 실시간 API로 재조회한다.
         if (result.length === 0 && radius >= 1000) {
-          setWideLoading(true);
-          getChargersByLocation(location.latitude, location.longitude)
+            setWideLoading(true);
+            setWideLoadingMsgIndex(0);
+            getChargersByLocation(location.latitude, location.longitude)
             .then(({ chargers: wide }) => {
               if (!cancelled) setWideChargers(wide);
             })
@@ -114,12 +125,24 @@ export default function NearbyChargersSection() {
         if (!cancelled) setLoading(false);
       });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [location, radius]);
-
-  if (location.status === "loading") {
+      return () => {
+        cancelled = true;
+      };
+    }, [location, radius]);
+  
+    // wideLoading이 true인 동안 4초마다 메시지를 순환시킨다.
+    // 데이터 fetch 로직과는 완전히 분리된 표시 전용 effect.
+    useEffect(() => {
+      if (!wideLoading) return;
+  
+      const interval = setInterval(() => {
+        setWideLoadingMsgIndex((prev) => (prev + 1) % WIDE_LOADING_MESSAGES.length);
+      }, 4000);
+  
+      return () => clearInterval(interval);
+    }, [wideLoading]);
+  
+    if (location.status === "loading") {
     return <p className="text-sm text-ink/40">📍 위치를 확인하는 중이에요...</p>;
   }
 
@@ -159,7 +182,11 @@ export default function NearbyChargersSection() {
       );
     }
     if (wideLoading) {
-        return <p className="text-sm text-ink/40">주변 지역 충전소를 찾는 중...</p>;
+        return (
+          <p className="text-sm text-ink/40 transition-opacity duration-300">
+            {WIDE_LOADING_MESSAGES[wideLoadingMsgIndex]}
+          </p>
+        );
       }
   
       if (wideChargers && wideChargers.length > 0) {
