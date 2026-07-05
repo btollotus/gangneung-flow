@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Copy } from "lucide-react";
 import {
     getNearbyChargers,
     getChargersByLocation,
@@ -55,6 +56,17 @@ export default function NearbyChargersSection() {
   // 넓게 재조회한 결과 (Kakao 좌표→행정구역 변환 + zcode 기반 실시간 API)
   const [wideChargers, setWideChargers] = useState<NearbyChargerStation[] | null>(null);
   const [wideLoading, setWideLoading] = useState(false);
+  // 주소 복사 버튼 클릭 시 잠깐 "복사됨" 표시를 위한 state (2026-07-05 추가)
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyAddress = (statId: string, address: string) => {
+    navigator.clipboard.writeText(address).then(() => {
+      setCopiedId(statId);
+      setTimeout(() => {
+        setCopiedId((prev) => (prev === statId ? null : prev));
+      }, 1500);
+    });
+  };
   const [wideLoadingMsgIndex, setWideLoadingMsgIndex] = useState(0);
 
   useEffect(() => {
@@ -208,6 +220,24 @@ export default function NearbyChargersSection() {
                       : `${station.distanceMeters}m`}
                   </p>
                 </div>
+                {station.address && (
+                  <div className="mt-0.5 flex items-center gap-1">
+                    <p className="flex-1 text-xs text-ink/40">{station.address}</p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCopyAddress(station.statId, station.address as string)
+                      }
+                      className="shrink-0 text-ink/30 transition-colors hover:text-seafoam"
+                      aria-label="주소 복사"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </button>
+                    {copiedId === station.statId && (
+                      <span className="shrink-0 text-[10px] text-seafoam">복사됨</span>
+                    )}
+                  </div>
+                )}
                 <div className="mt-1 space-y-0.5">
                   {summarizeChargerUnits(station.chargers).map((group) => (
                     <div key={group.statLabel} className="flex items-center gap-1.5">
@@ -235,7 +265,11 @@ export default function NearbyChargersSection() {
         );
       }
   
-      return <p className="text-sm text-ink/40">1km 이내에도 충전소가 없어요.</p>;
+      return (
+        <p className="text-sm text-ink/40">
+          😥 이 근처엔 충전소가 없네요. 이동 후 다시 확인해주세요!
+        </p>
+      );
   }
 
   return (
@@ -249,6 +283,24 @@ export default function NearbyChargersSection() {
             <p className="text-sm font-semibold text-ink">{station.name}</p>
             <p className="text-xs text-ink/40">{station.distanceMeters}m</p>
           </div>
+          {station.address && (
+            <div className="mt-0.5 flex items-center gap-1">
+              <p className="flex-1 text-xs text-ink/40">{station.address}</p>
+              <button
+                type="button"
+                onClick={() =>
+                  handleCopyAddress(station.statId, station.address as string)
+                }
+                className="shrink-0 text-ink/30 transition-colors hover:text-seafoam"
+                aria-label="주소 복사"
+              >
+                <Copy className="h-3 w-3" />
+              </button>
+              {copiedId === station.statId && (
+                <span className="shrink-0 text-[10px] text-seafoam">복사됨</span>
+              )}
+            </div>
+          )}
           <div className="mt-1 space-y-0.5">
           {summarizeChargerUnits(station.chargers).map((group) => (
               <div
