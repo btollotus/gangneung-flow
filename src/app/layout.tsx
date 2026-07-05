@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import BottomTabNav from "./components/BottomTabNav";
 import NicknameOnboarding from "./components/NicknameOnboarding";
+import SplashScreen from "./components/SplashScreen";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <div className="flex-1 pb-20">{children}</div>
         <NicknameOnboarding />
         <BottomTabNav />
+        <SplashScreen />
       </body>
     </html>
   );

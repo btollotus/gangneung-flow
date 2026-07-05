@@ -32,3 +32,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes splash-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-splash-pop {
+  animation: splash-pop 0.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-splash-pop {
+    animation: none;
+  }
+}
