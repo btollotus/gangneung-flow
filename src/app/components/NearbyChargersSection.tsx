@@ -91,35 +91,30 @@ export default function NearbyChargersSection() {
     );
   }, []);
 
-  // 강원(강릉)이든 아니든 위치가 확정되면 바로 getChargersByLocation을 호출한다.
-  // 이 함수 내부에서 강원이면 로컬 DB(빠름), 그 외 지역이면 전국 실시간 API로
-  // 자동 분기하므로, 컴포넌트에서 별도의 500m/1km 로컬 단계를 거칠 필요가 없다.
-  // (2026-07-05: 강릉 밖에서는 로컬 DB가 항상 0건이라 "1km로 넓혀서 보기" 클릭을
-  // 강요하던 문제 — 처음부터 전국 API 지원 함수 하나로 통일해 해결)
-  useEffect(() => {
+  // 충전소 조회는 더 이상 위치 확정 즉시 자동 실행하지 않고,
+  // 사용자가 아래 "내 주변 충전소 검색하기" 버튼을 눌렀을 때만 실행한다.
+  // (2026-07-05: 자동 검색 대신 사용자가 직접 검색을 트리거하도록 변경 요청)
+  // 강원(강릉)이든 아니든 getChargersByLocation 내부에서 자동 분기하므로
+  // (강원이면 로컬 DB, 그 외 지역이면 전국 실시간 API) 이 부분은 그대로 유지한다.
+  const handleSearch = () => {
     if (location.status !== "ready") return;
 
-    let cancelled = false;
     setLoading(true);
     setError(null);
     setLoadingMsgIndex(0);
 
     getChargersByLocation(location.latitude, location.longitude)
       .then(({ chargers: result }) => {
-        if (!cancelled) setChargers(result);
+        setChargers(result);
       })
       .catch((err) => {
         console.error("근처 충전소 조회 오류:", err);
-        if (!cancelled) setError("충전소 정보를 가져오지 못했어요.");
+        setError("충전소 정보를 가져오지 못했어요.");
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [location]);
+  };
 
   // loading이 true인 동안 4초마다 메시지를 순환시킨다.
   // 데이터 fetch 로직과는 완전히 분리된 표시 전용 effect.
@@ -161,7 +156,19 @@ export default function NearbyChargersSection() {
     return <p className="text-sm text-coral">{error}</p>;
   }
 
-  if (!chargers || chargers.length === 0) {
+  if (chargers === null) {
+    return (
+      <button
+        type="button"
+        onClick={handleSearch}
+        className="w-full rounded-2xl border border-seafoam/30 bg-seafoam/10 px-4 py-3 text-sm font-medium text-seafoam transition-colors hover:bg-seafoam/20"
+      >
+        ⚡ 내 주변 충전소 검색하기
+      </button>
+    );
+  }
+
+  if (chargers.length === 0) {
     return (
       <p className="text-sm text-ink/40">
         😥 이 근처엔 충전소가 없네요. 이동 후 다시 확인해주세요!
