@@ -434,21 +434,9 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
               {expandedChargerId === place.id && (
                 <div className="mt-2 space-y-2 border-t border-ink/10 pt-3">
                  {chargerLoadingId === place.id && (
-                    <div className="space-y-1.5">
-                      <div className="flex gap-1">
-                        {CHARGER_LOADING_MESSAGES.map((_, i) => (
-                          <span
-                            key={i}
-                            className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                              i <= chargerLoadingMsgIndex ? 'bg-seafoam' : 'bg-ink/10'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-xs text-ink/40 transition-opacity duration-300">
-                        {CHARGER_LOADING_MESSAGES[chargerLoadingMsgIndex]}
-                      </p>
-                    </div>
+                    <p className="text-xs text-ink/40 transition-opacity duration-300">
+                      {CHARGER_LOADING_MESSAGES[chargerLoadingMsgIndex]}
+                    </p>
                   )}
     
                   {chargerErrors[place.id] && (
@@ -471,18 +459,6 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                             ? CHARGER_LOADING_MESSAGES[chargerLoadingMsgIndex]
                             : '⚡ 1km로 넓혀서 보기'}
                         </button>
-                        {chargerExpandLoading === place.id && (
-                          <div className="flex gap-1">
-                            {CHARGER_LOADING_MESSAGES.map((_, i) => (
-                              <span
-                                key={i}
-                                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                                  i <= chargerLoadingMsgIndex ? 'bg-seafoam' : 'bg-ink/10'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        )}
                       </div>
                     )}
 

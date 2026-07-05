@@ -195,21 +195,9 @@ export default function NearbyChargersSection() {
     }
     if (wideLoading) {
         return (
-          <div className="space-y-2">
-            <div className="flex gap-1.5">
-              {WIDE_LOADING_MESSAGES.map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                    i <= wideLoadingMsgIndex ? "bg-seafoam" : "bg-ink/10"
-                  }`}
-                />
-              ))}
-            </div>
-            <p className="text-sm text-ink/40 transition-opacity duration-300">
-              {WIDE_LOADING_MESSAGES[wideLoadingMsgIndex]}
-            </p>
-          </div>
+          <p className="text-sm text-ink/40 transition-opacity duration-300">
+            {WIDE_LOADING_MESSAGES[wideLoadingMsgIndex]}
+          </p>
         );
       }
   
