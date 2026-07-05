@@ -13,7 +13,16 @@ type LocationState =
   | { status: 'error'; message: string }
   | { status: 'ready'; latitude: number; longitude: number }
 
-const CHECKIN_RADIUS_METERS = 200
+  const CHECKIN_RADIUS_METERS = 200
+
+  // 근처 충전소 조회는 외부 API 응답이 느릴 수 있어(2026-07-05 확인),
+  // 정적 문구 대신 순환 메시지로 진행 중임을 계속 알린다. (홈 화면과 동일 패턴)
+  const CHARGER_LOADING_MESSAGES = [
+    '충전소 정보를 불러오는 중...',
+    '실시간 상태를 확인하고 있어요...',
+    '조금만 더 기다려주세요...',
+    '거의 다 왔어요...',
+  ]
 
 function haversineDistanceMeters(
   lat1: number,
@@ -77,6 +86,8 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
   const [chargerErrors, setChargerErrors] = useState<Record<string, string>>({})
   const [chargerRadiusExpanded, setChargerRadiusExpanded] = useState<Set<string>>(new Set())
   const [chargerExpandLoading, setChargerExpandLoading] = useState<string | null>(null)
+  // 순환 로딩 메시지 인덱스 (한 번에 카드 하나만 펼쳐지므로 단일 인덱스로 충분)
+  const [chargerLoadingMsgIndex, setChargerLoadingMsgIndex] = useState(0)
 
     // 주소 복사 피드백 (장소/주차장/충전소 공용, key로 구분)
     const [copiedKey, setCopiedKey] = useState<string | null>(null)
@@ -105,6 +116,22 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }, [])
+
+  // 충전소 조회(초기 또는 반경 확장)가 진행 중인 동안 4초마다 메시지를 순환시킨다.
+  // 데이터 fetch 로직과는 완전히 분리된 표시 전용 effect. (홈 화면과 동일 패턴)
+  useEffect(() => {
+    const isChargerLoading = chargerLoadingId !== null || chargerExpandLoading !== null
+    if (!isChargerLoading) {
+      setChargerLoadingMsgIndex(0)
+      return
+    }
+
+    const interval = setInterval(() => {
+      setChargerLoadingMsgIndex((prev) => (prev + 1) % CHARGER_LOADING_MESSAGES.length)
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [chargerLoadingId, chargerExpandLoading])
 
   if (location.status === 'loading') {
     return <p className="text-sm text-ink/60">📍 위치를 확인하는 중이에요...</p>
@@ -230,6 +257,39 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
     }
   }
 
+  const handleRefreshCharger = async (place: CheckinPlace) => {
+    // 캐시를 지우고 강제로 재조회 (기존 handleToggleCharger는 캐시 있으면 재호출 안 함)
+    setChargerCache((prev) => {
+      const next = { ...prev }
+      delete next[place.id]
+      return next
+    })
+    setChargerRadiusExpanded((prev) => {
+      const next = new Set(prev)
+      next.delete(place.id)
+      return next
+    })
+    setChargerErrors((prev) => {
+      const next = { ...prev }
+      delete next[place.id]
+      return next
+    })
+    setChargerLoadingId(place.id)
+
+    try {
+      const chargers = await getNearbyChargers(place.latitude, place.longitude)
+      setChargerCache((prev) => ({ ...prev, [place.id]: chargers }))
+    } catch (err) {
+      console.error('충전소 재검색 오류:', err)
+      setChargerErrors((prev) => ({
+        ...prev,
+        [place.id]: '충전소 정보를 가져오지 못했어요.',
+      }))
+    } finally {
+      setChargerLoadingId(null)
+    }
+  }
+
   const handleCopyAddress = async (key: string, address: string) => {
     try {
       await navigator.clipboard.writeText(address)
@@ -351,18 +411,32 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                 </div>
               )}
     
-              <button
-                type="button"
-                onClick={() => handleToggleCharger(place)}
-                className="mt-2 text-xs font-medium text-ink/50 underline underline-offset-2"
-              >
-                {expandedChargerId === place.id ? '⚡ 근처 충전소 접기' : '⚡ 근처 충전소 보기'}
-              </button>
+    <div className="mt-2 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleToggleCharger(place)}
+                  className="text-xs font-medium text-ink/50 underline underline-offset-2"
+                >
+                  {expandedChargerId === place.id ? '⚡ 근처 충전소 접기' : '⚡ 근처 충전소 보기'}
+                </button>
+                {expandedChargerId === place.id && (
+                  <button
+                    type="button"
+                    onClick={() => handleRefreshCharger(place)}
+                    disabled={chargerLoadingId === place.id || chargerExpandLoading === place.id}
+                    className="text-xs font-medium text-ink/40 underline underline-offset-2 disabled:opacity-50"
+                  >
+                    ↻ 다시 검색
+                  </button>
+                )}
+              </div>
     
               {expandedChargerId === place.id && (
                 <div className="mt-2 space-y-2 border-t border-ink/10 pt-3">
                   {chargerLoadingId === place.id && (
-                    <p className="text-xs text-ink/40">충전소 정보를 불러오는 중...</p>
+                    <p className="text-xs text-ink/40 transition-opacity duration-300">
+                      {CHARGER_LOADING_MESSAGES[chargerLoadingMsgIndex]}
+                    </p>
                   )}
     
                   {chargerErrors[place.id] && (
@@ -381,7 +455,9 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                           disabled={chargerExpandLoading === place.id}
                           className="text-xs font-medium text-seafoam underline underline-offset-2 disabled:opacity-60"
                         >
-                          {chargerExpandLoading === place.id ? '조회 중...' : '⚡ 1km로 넓혀서 보기'}
+                          {chargerExpandLoading === place.id
+                            ? CHARGER_LOADING_MESSAGES[chargerLoadingMsgIndex]
+                            : '⚡ 1km로 넓혀서 보기'}
                         </button>
                       </div>
                     )}
