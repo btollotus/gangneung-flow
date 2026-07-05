@@ -247,17 +247,21 @@ export async function getChargersByLocation(
   lat: number,
   lng: number
 ): Promise<{ zcodeResolved: boolean; chargers: NearbyChargerStation[] }> {
-  const region = await getRegionFromCoords(lat, lng);
+    const region = await getRegionFromCoords(lat, lng);
 
-  if (!region) {
-    return { zcodeResolved: false, chargers: [] };
-  }
-
-  const zcode = resolveZcode(region.region1, region.region2);
-
-  if (zcode === null) {
-    return { zcodeResolved: false, chargers: [] };
-  }
+    if (!region) {
+      return { zcodeResolved: false, chargers: [] };
+    }
+  
+    const zcode = resolveZcode(region.region1, region.region2);
+  
+    console.log(
+      `evCharger.ts: getChargersByLocation 호출 — lat=${lat}, lng=${lng}, region1="${region.region1}", region2="${region.region2}", zcode=${zcode}`
+    );
+  
+    if (zcode === null) {
+      return { zcodeResolved: false, chargers: [] };
+    }
 
   // 강원 지역은 기존 DB 기반 함수가 더 빠르고 이미 검증되어 있으므로 그대로 재사용
   if (zcode === 51) {
