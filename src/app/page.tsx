@@ -55,20 +55,25 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-sand text-ink">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-ink px-6 py-20 text-sand sm:px-10">
-      <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full border-[3px] border-dashed border-coral/40" />
-      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-coral">
+     {/* Hero */}
+     <section className="relative overflow-hidden bg-gradient-to-br from-seafoam/25 via-seafoam/5 to-sand px-6 py-10 text-ink sm:px-10">
+        <div className="absolute right-5 top-5 flex items-end gap-1.5 sm:right-9 sm:top-7">
+          <span className="h-1.5 w-1.5 rounded-full bg-coral/25" />
+          <span className="h-2 w-2 translate-y-0.5 rounded-full bg-coral/45" />
+          <span className="h-2.5 w-2.5 translate-y-1 rounded-full bg-coral/70" />
+          <span className="h-3.5 w-3.5 translate-y-1.5 rounded-full bg-coral" />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-coral">
           강릉 FLOW 인사이트
         </p>
-        <h1 className="mt-4 max-w-md text-3xl font-bold leading-tight sm:text-4xl">
+        <h1 className="mt-3 max-w-md text-2xl font-bold leading-tight sm:text-3xl">
           도장 한 칸마다,
           <br />
           강릉의 다른 얼굴을 찍어가요
         </h1>
-        <p className="mt-4 max-w-sm text-sm text-sand/80">
+        <p className="mt-3 max-w-sm text-sm text-ink/70">
           익숙한 명소부터 동네 골목까지 — 31곳을 채워가며 강릉을 새로 만나보세요.
-          </p>
+        </p>
       </section>
 
       {/* 실시간 강릉 */}
