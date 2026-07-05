@@ -10,7 +10,7 @@ type Props = {
 export default function KakaoShareButton({
   text,
   path = '/',
-  label = '📤 친구에게 공유하기',
+  label = '📤 카카오톡 친구에게 공유하기',
   className = '',
 }: Props) {
   const handleShare = () => {
