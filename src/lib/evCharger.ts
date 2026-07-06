@@ -246,11 +246,11 @@ export async function getNearestChargerFallback(
 export async function getChargersByLocation(
   lat: number,
   lng: number
-): Promise<{ zcodeResolved: boolean; chargers: NearbyChargerStation[] }> {
+): Promise<{ zcodeResolved: boolean; chargers: NearbyChargerStation[]; error: boolean }> {
     const region = await getRegionFromCoords(lat, lng);
 
     if (!region) {
-      return { zcodeResolved: false, chargers: [] };
+      return { zcodeResolved: false, chargers: [], error: false };
     }
   
     const zcode = resolveZcode(region.region1, region.region2);
@@ -260,18 +260,18 @@ export async function getChargersByLocation(
     );
   
     if (zcode === null) {
-      return { zcodeResolved: false, chargers: [] };
+      return { zcodeResolved: false, chargers: [], error: false };
     }
 
   // 강원 지역은 기존 DB 기반 함수가 더 빠르고 이미 검증되어 있으므로 그대로 재사용
   if (zcode === 51) {
     const chargers = await getNearbyChargers(lat, lng, 5000);
-    return { zcodeResolved: true, chargers };
+    return { zcodeResolved: true, chargers, error: false };
   }
 
   if (!SERVICE_KEY) {
     console.error("evCharger.ts: GN_ITS_API_KEY가 설정되지 않았습니다.");
-    return { zcodeResolved: true, chargers: [] };
+    return { zcodeResolved: true, chargers: [], error: true };
   }
 
   try {
@@ -283,7 +283,7 @@ export async function getChargersByLocation(
       console.error(
         `evCharger.ts: getChargerInfo(zcode=${zcode}) 요청 실패 (상태 코드 ${res.status}): ${text}`
       );
-      return { zcodeResolved: true, chargers: [] };
+      return { zcodeResolved: true, chargers: [], error: true };
     }
 
     const json = JSON.parse(text);
@@ -292,7 +292,7 @@ export async function getChargersByLocation(
       console.error(
         `evCharger.ts: getChargerInfo(zcode=${zcode}) 응답 오류: ${json.resultMsg ?? "알 수 없는 오류"}`
       );
-      return { zcodeResolved: true, chargers: [] };
+      return { zcodeResolved: true, chargers: [], error: true };
     }
 
     const items = json.items?.item ?? [];
@@ -301,7 +301,7 @@ export async function getChargersByLocation(
       // API 자체는 정상이나 해당 지역 데이터가 없는 경우
       // (2026-07-04 확인: zcode=46(전라남도)이 이 상태 — 통합 전 코드
       // 체계 과도기로 추정. 에러가 아닌 정상적인 "데이터 없음"으로 처리)
-      return { zcodeResolved: true, chargers: [] };
+      return { zcodeResolved: true, chargers: [], error: false };
     }
 
     const withDistance = items
@@ -353,9 +353,9 @@ export async function getChargersByLocation(
       .sort((a, b) => a.distanceMeters - b.distanceMeters)
       .slice(0, 10);
 
-    return { zcodeResolved: true, chargers: stations };
-  } catch (err) {
-    console.error(`evCharger.ts: getChargerInfo(zcode=${zcode}) 호출 중 예외 발생:`, err);
-    return { zcodeResolved: true, chargers: [] };
+      return { zcodeResolved: true, chargers: stations, error: false };
+    } catch (err) {
+      console.error(`evCharger.ts: getChargerInfo(zcode=${zcode}) 호출 중 예외 발생:`, err);
+      return { zcodeResolved: true, chargers: [], error: true };
+    }
   }
-}

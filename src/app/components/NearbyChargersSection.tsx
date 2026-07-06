@@ -104,7 +104,13 @@ export default function NearbyChargersSection() {
     setLoadingMsgIndex(0);
 
     getChargersByLocation(location.latitude, location.longitude)
-      .then(({ chargers: result }) => {
+      .then(({ chargers: result, error: apiError }) => {
+        if (apiError) {
+          // API 타임아웃/오류인 경우 (2026-07-06 확인: 504 등) — 기존에 표시 중이던
+          // 목록은 그대로 두고 에러 메시지만 보여준다. "충전소 없음"으로 오분류하지 않기 위함.
+          setError("충전소 정보를 가져오지 못했어요.");
+          return;
+        }
         setChargers(result);
       })
       .catch((err) => {
