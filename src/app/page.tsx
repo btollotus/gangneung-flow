@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import CctvViewer from './components/CctvViewer'
 import NearbyChargersSection from './components/NearbyChargersSection'
+import NearbyRestaurantsSection from './components/NearbyRestaurantsSection'
 import KakaoShareButton from './components/KakaoShareButton'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
@@ -99,7 +100,15 @@ export default async function Home() {
         </div>
         <NearbyChargersSection />
       </section>
-      {/* 장소 미리보기 */}
+
+     {/* 내 주변 맛집/카페 */}
+     <section className="px-6 pt-10 sm:px-10">
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-lg font-bold">🍜 지금 내 주변 맛집·카페</h2>
+        </div>
+        <NearbyRestaurantsSection />
+      </section>
+      {/* 장소 미리보기 */} 
       <section className="px-6 py-12 sm:px-10">
       <p className="mb-6 text-xs text-ink/50">31곳 중 {previewCount}곳 미리보기</p>
 
