@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Copy } from "lucide-react";
+import { Copy, RefreshCw } from "lucide-react";
 import {
     getChargersByLocation,
     type NearbyChargerStation,
@@ -127,7 +127,24 @@ export default function NearbyChargersSection() {
 
     return () => clearInterval(interval);
   }, [loading]);
-  
+
+  // 헤더에 있던 RefreshButton(window.location.reload)이 스플래시 화면을
+  // 재생시키는 원인이었음(2026-07-06). 페이지 리로드 없이 handleSearch만
+  // 다시 실행하도록 이 컴포넌트 내부로 이동.
+  const refreshControl = (
+    <div className="mb-2 flex justify-end">
+      <button
+        type="button"
+        onClick={handleSearch}
+        className="flex items-center gap-1 text-xs text-ink/40 transition-colors hover:text-seafoam"
+        aria-label="다시 검색"
+      >
+        <RefreshCw className="h-3 w-3" />
+        다시 검색
+      </button>
+    </div>
+  );
+
     if (location.status === "loading") {
     return <p className="text-sm text-ink/40">📍 위치를 확인하는 중이에요...</p>;
   }
@@ -153,7 +170,12 @@ export default function NearbyChargersSection() {
   }
 
   if (error) {
-    return <p className="text-sm text-coral">{error}</p>;
+    return (
+      <>
+        {refreshControl}
+        <p className="text-sm text-coral">{error}</p>
+      </>
+    );
   }
 
   if (chargers === null) {
@@ -170,14 +192,18 @@ export default function NearbyChargersSection() {
 
   if (chargers.length === 0) {
     return (
-      <p className="text-sm text-ink/40">
-        😥 이 근처엔 충전소가 없네요. 이동 후 다시 확인해주세요!
-      </p>
+      <>
+        {refreshControl}
+        <p className="text-sm text-ink/40">
+          😥 이 근처엔 충전소가 없네요. 이동 후 다시 확인해주세요!
+        </p>
+      </>
     );
   }
 
   return (
     <div className="space-y-2">
+      {refreshControl}
       {chargers.map((station) => (
         <div
           key={station.statId}

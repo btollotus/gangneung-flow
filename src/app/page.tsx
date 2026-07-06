@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import CctvViewer from './components/CctvViewer'
 import NearbyChargersSection from './components/NearbyChargersSection'
-import RefreshButton from './components/RefreshButton'
 import KakaoShareButton from './components/KakaoShareButton'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
@@ -96,7 +95,6 @@ export default async function Home() {
           <h2 className="text-lg font-bold">⚡ 지금 내 주변 전기차충전소</h2>
           <div className="flex items-center gap-3">
             <span className="text-xs text-ink/40">실시간 상태</span>
-            <RefreshButton />
           </div>
         </div>
         <NearbyChargersSection />
