@@ -93,7 +93,7 @@ export default async function Home() {
      {/* 내 주변 충전소 */}
      <section className="px-6 pt-10 sm:px-10">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-lg font-bold">⚡ 지금 내 주변 전기차충전소</h2>
+          <h2 className="text-lg font-bold"></h2>
           <div className="flex items-center gap-3">
             <span className="text-xs text-ink/40">실시간 상태</span>
           </div>
@@ -104,7 +104,7 @@ export default async function Home() {
      {/* 내 주변 맛집/카페 */}
      <section className="px-6 pt-10 sm:px-10">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-lg font-bold">🍜 지금 내 주변 맛집·카페</h2>
+          <h2 className="text-lg font-bold"></h2>
         </div>
         <NearbyRestaurantsSection />
       </section>
