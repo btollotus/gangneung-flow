@@ -6,6 +6,7 @@ import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
 import { getNearbyChargers, type NearbyChargerStation, type ChargerUnit } from '@/lib/evCharger'
+import { HOOKS } from '../components/PlaceHookCard'
 
 type LocationState =
   | { status: 'loading' }
@@ -65,6 +66,11 @@ function summarizeChargerUnits(units: ChargerUnit[]) {
   }
 
   return Array.from(map.values())
+}
+
+// 장소명으로 홈 화면과 동일한 훅 멘트를 찾는다. 일치하는 게 없으면 null (해당 장소는 훅 문구 없이 표시).
+function getHookForPlace(name: string): string | null {
+  return HOOKS.find((h) => h.name === name)?.hook ?? null
 }
 
 export default function CheckinList({ places }: { places: CheckinPlace[] }) {
@@ -311,6 +317,7 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
       {placesWithDistance.map((place) => {
         const inRange = place.distance <= CHECKIN_RADIUS_METERS
         const isConfirmed = confirmedIds.has(place.id)
+        const hook = getHookForPlace(place.name)
 
         return (
           <li
@@ -319,7 +326,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
         >
           <div className="flex items-center justify-between">
           <div>
-                <p className="text-sm font-semibold text-ink">{place.name}</p>
+          <p className="text-sm font-semibold text-ink">{place.name}</p>
+                {hook && (
+                  <p className="mt-0.5 text-[11px] font-medium text-seafoam">{hook}</p>
+                )}
                 <p className="mt-0.5 text-xs text-ink/50">
                   {inRange
                     ? `${Math.round(place.distance)}m · 체크인 가능`

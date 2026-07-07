@@ -1,4 +1,4 @@
-const HOOKS: { name: string; hook: string }[] = [
+export const HOOKS: { name: string; hook: string }[] = [
     { name: '경포해변', hook: '낮보다 밤이 더 아름다운 강릉 대표 해변' },
     { name: '경포대', hook: '천년의 풍경이 기다리는 강릉 최고의 전망' },
     { name: '안목해변 커피거리', hook: '바다를 마시는 특별한 커피 한 잔' },
