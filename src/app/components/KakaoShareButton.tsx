@@ -11,7 +11,7 @@ export default function KakaoShareButton({
   text,
   path = '/',
   label = '📤 카카오톡 친구에게 공유하기',
-  className = '',
+  className,
 }: Props) {
   const handleShare = () => {
     if (typeof window === 'undefined' || !window.Kakao) {
@@ -33,7 +33,10 @@ export default function KakaoShareButton({
     <button
       type="button"
       onClick={handleShare}
-      className={`inline-flex items-center gap-1.5 text-xs font-semibold text-coral underline underline-offset-4 ${className}`}
+      className={
+        className ??
+        'inline-flex items-center gap-1.5 text-xs font-semibold text-coral underline underline-offset-4'
+      }
     >
       {label}
     </button>
