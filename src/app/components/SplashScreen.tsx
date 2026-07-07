@@ -43,19 +43,19 @@ export default function SplashScreen({ backgroundPhoto = null }: SplashScreenPro
         <img
           src={backgroundPhoto.url}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          className="absolute inset-0 h-full w-full object-cover opacity-60"
         />
       )}
-      <div className="absolute inset-0 bg-ink/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/50 via-ink/20 to-ink/60" />
 
-      <div className="relative z-10 flex items-center gap-2">
+      <div className="relative z-10 flex items-center gap-2 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
         <span className="h-2 w-2 animate-splash-pop rounded-full bg-coral/40 [animation-delay:0ms]" />
         <span className="h-3 w-3 animate-splash-pop rounded-full bg-coral/60 [animation-delay:120ms]" />
         <span className="h-4 w-4 animate-splash-pop rounded-full bg-coral/80 [animation-delay:240ms]" />
         <span className="h-5 w-5 animate-splash-pop rounded-full bg-coral [animation-delay:360ms]" />
       </div>
       <p
-        className={`relative z-10 text-sm font-semibold uppercase tracking-[0.35em] text-sand transition-opacity duration-300 ${
+        className={`relative z-10 text-sm font-semibold uppercase tracking-[0.35em] text-sand drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)] transition-opacity duration-300 ${
           phase === 'dots' ? 'opacity-0' : 'opacity-100'
         }`}
       >
