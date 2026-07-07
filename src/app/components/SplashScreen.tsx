@@ -20,8 +20,8 @@ export default function SplashScreen({ backgroundPhoto = null }: SplashScreenPro
 
   useEffect(() => {
     const toLogo = setTimeout(() => setPhase('logo'), 550)
-    const toExit = setTimeout(() => setPhase('exit'), 1200)
-    const toDone = setTimeout(() => setPhase('done'), 1550)
+    const toExit = setTimeout(() => setPhase('exit'), 2150)
+    const toDone = setTimeout(() => setPhase('done'), 2500)
     return () => {
       clearTimeout(toLogo)
       clearTimeout(toExit)
