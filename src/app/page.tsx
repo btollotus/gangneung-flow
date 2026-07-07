@@ -8,8 +8,7 @@ import TravelAwardGallery from './components/TravelAwardGallery'
 type Tier = 'landmark' | 'underrated' | 'mission'
 
 type Place = {
-  id: string{/* CTA */}
-  <section className="px-6 pb-16 sm:px-10">
+  id: string
   name: string
   tier: Tier
   category: string | null
