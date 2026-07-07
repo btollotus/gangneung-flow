@@ -36,9 +36,14 @@ export const HOOKS: { name: string; hook: string }[] = [
     const picked = HOOKS[Math.floor(Math.random() * HOOKS.length)]
   
     return (
-      <div>
+      
+        href={`https://search.naver.com/search.naver?query=${encodeURIComponent(picked.name)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
         <p className="text-base font-bold text-seafoam">{picked.name}</p>
         <p className="mt-0.5 text-sm font-medium text-ink/80">{picked.hook}</p>
-      </div>
+      </a>
     )
   }
