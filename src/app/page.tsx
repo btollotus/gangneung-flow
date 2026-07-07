@@ -3,11 +3,13 @@ import CctvViewer from './components/CctvViewer'
 import NearbyChargersSection from './components/NearbyChargersSection'
 import NearbyRestaurantsSection from './components/NearbyRestaurantsSection'
 import KakaoShareButton from './components/KakaoShareButton'
+import TravelAwardGallery from './components/TravelAwardGallery'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
 
 type Place = {
-  id: string
+  id: string{/* CTA */}
+  <section className="px-6 pb-16 sm:px-10">
   name: string
   tier: Tier
   category: string | null
@@ -141,6 +143,8 @@ export default async function Home() {
           </div>
         )}
       </section>
+
+      <TravelAwardGallery />
 
       {/* CTA */}
       <section className="px-6 pb-16 sm:px-10">
