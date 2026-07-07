@@ -365,64 +365,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
             >
               {isConfirmed ? '✅ 확인됨' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
             </button>
-          </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => handleToggleParking(place)}
-            className="mt-3 text-xs font-medium text-ink/50 underline underline-offset-2"
-          >
-            {expandedParkingId === place.id ? '🅿️ 근처 주차장 접기' : '🅿️ 근처 주차장 보기'}
-          </button>
-
-          {expandedParkingId === place.id && (
-            <div className="mt-2 space-y-2 border-t border-ink/10 pt-3">
-              {parkingLoadingId === place.id && (
-                <p className="text-xs text-ink/40">주차장 정보를 불러오는 중...</p>
-              )}
-
-              {parkingErrors[place.id] && (
-                <p className="text-xs text-coral">{parkingErrors[place.id]}</p>
-              )}
-
-              {parkingLoadingId !== place.id &&
-                !parkingErrors[place.id] &&
-                parkingCache[place.id]?.length === 0 && (
-                  <p className="text-xs text-ink/40">반경 500m 이내 주차장이 없어요.</p>
-                )}
-
-{parkingCache[place.id]?.map((lot) => (
-                  <div key={lot.prkId} className="rounded-xl bg-sand/60 p-2.5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-ink">{lot.name}</p>
-                      <p className="text-[10px] text-ink/40">{lot.distanceMeters}m</p>
-                    </div>
-                    <p className="mt-0.5 text-[11px] text-ink/50">
-                      {lot.totalLots != null && lot.availLots != null
-                        ? `잔여 ${lot.availLots} / ${lot.totalLots}면`
-                        : '실시간 정보 없음'}
-                    </p>
-                    {lot.address && (
-                      <button
-                        type="button"
-                        onClick={() => handleCopyAddress(`lot:${lot.prkId}`, lot.address!)}
-                        className={`mt-1 flex max-w-full items-center gap-1 text-left text-[10px] transition-colors ${
-                          copiedKey === `lot:${lot.prkId}` ? 'text-seafoam' : 'text-ink/40'
-                        }`}
-                      >
-                        <span className="truncate underline decoration-dotted underline-offset-2">
-                          {lot.address}
-                        </span>
-                        <Copy size={10} strokeWidth={1.8} className="shrink-0" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                </div>
-              )}
-    
-    <div className="mt-2 flex items-center gap-3">
-                <button
+<div className="mt-2 flex items-center gap-3">
+            <button
                   type="button"
                   onClick={() => handleToggleCharger(place)}
                   className="text-xs font-medium text-ink/50 underline underline-offset-2"
