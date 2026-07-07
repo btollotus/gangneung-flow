@@ -50,7 +50,7 @@ export default async function TravelAwardGallery() {
         <span className="text-xs text-ink/40">관광공모전 수상작</span>
       </div>
       <p className="mb-4 text-xs text-ink/50">
-        관광공모전 수상작을 소개합니다.
+        
       </p>
 
       <TravelAwardGalleryClient photos={photos} />
