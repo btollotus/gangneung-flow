@@ -32,7 +32,7 @@ export default async function TravelAwardGallery() {
     )
 
   if (error) {
-    console.error('전국 여행 사진관 조회 오류:', error.message)
+    console.error('Beautiful Korea!! 조회 오류:', error.message)
     return null
   }
 
@@ -46,11 +46,11 @@ export default async function TravelAwardGallery() {
   return (
     <section className="px-6 pt-10 sm:px-10">
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-lg font-bold">📷 전국 여행 사진관</h2>
+        <h2 className="text-lg font-bold">📷 Beautiful Korea!!</h2>
         <span className="text-xs text-ink/40">관광공모전 수상작</span>
       </div>
       <p className="mb-4 text-xs text-ink/50">
-        강릉 31곳과는 별개로, 전국 각지 관광공모전 수상작을 소개합니다.
+        관광공모전 수상작을 소개합니다.
       </p>
 
       <TravelAwardGalleryClient photos={photos} />

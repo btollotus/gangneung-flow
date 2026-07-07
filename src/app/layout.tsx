@@ -15,7 +15,7 @@ async function getRandomAwardPhoto() {
     .select("*", { count: "exact", head: true });
 
   if (countError || !count) {
-    if (countError) console.error("전국 여행 사진관 count 조회 오류:", countError.message);
+    if (countError) console.error("Beautiful Korea!! count 조회 오류:", countError.message);
     return null;
   }
 
@@ -28,7 +28,7 @@ async function getRandomAwardPhoto() {
     .single();
 
   if (error || !data) {
-    if (error) console.error("전국 여행 사진관 랜덤 조회 오류:", error.message);
+    if (error) console.error("Beautiful Korea!! 랜덤 조회 오류:", error.message);
     return null;
   }
 
