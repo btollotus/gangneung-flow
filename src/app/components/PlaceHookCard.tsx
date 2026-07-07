@@ -37,7 +37,7 @@ const HOOKS: { name: string; hook: string }[] = [
   
     return (
       <div>
-        <p className="text-xs font-semibold text-seafoam">{picked.name}</p>
+        <p className="text-base font-bold text-seafoam">{picked.name}</p>
         <p className="mt-0.5 text-sm font-medium text-ink/80">{picked.hook}</p>
       </div>
     )
