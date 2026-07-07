@@ -61,7 +61,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-sand text-ink">
      {/* Hero */}
-     <section className="relative overflow-hidden bg-gradient-to-br from-seafoam/25 via-seafoam/5 to-sand px-6 py-10 text-ink sm:px-10">
+     <section className="relative overflow-hidden bg-gradient-to-br from-seafoam/25 via-seafoam/5 to-sand px-6 pt-10 pb-4 text-ink sm:px-10">
         <div className="absolute right-5 top-5 flex items-end gap-1.5 sm:right-9 sm:top-7">
           <span className="h-1.5 w-1.5 rounded-full bg-coral/25" />
           <span className="h-2 w-2 translate-y-0.5 rounded-full bg-coral/45" />
