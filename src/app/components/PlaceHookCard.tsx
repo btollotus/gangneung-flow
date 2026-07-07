@@ -1,3 +1,8 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
 export const HOOKS: { name: string; hook: string }[] = [
     { name: '경포해변', hook: '낮보다 밤이 더 아름다운 강릉 대표 해변' },
     { name: '경포대', hook: '천년의 풍경이 기다리는 강릉 최고의 전망' },
@@ -31,11 +36,40 @@ export const HOOKS: { name: string; hook: string }[] = [
     { name: '노추산 모정탑길', hook: '소원을 담은 돌탑길을 걸어보세요' },
     { name: '굴산사지 당간지주', hook: '천년 역사를 품은 고요한 문화유산' },
   ]
-  
-  export default function PlaceHookCard() {
-    const picked = HOOKS[Math.floor(Math.random() * HOOKS.length)]
-  
-    return (
+
+const AUTOPLAY_INTERVAL_MS = 4000
+const SWIPE_THRESHOLD_PX = 40
+
+export default function PlaceHookCard() {
+  const [index, setIndex] = useState(0)
+  const touchStartX = useRef<number | null>(null)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % HOOKS.length)
+    }, AUTOPLAY_INTERVAL_MS)
+    return () => clearInterval(timer)
+  }, [])
+
+  const goPrev = () => setIndex((prev) => (prev - 1 + HOOKS.length) % HOOKS.length)
+  const goNext = () => setIndex((prev) => (prev + 1) % HOOKS.length)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const diff = e.changedTouches[0].clientX - touchStartX.current
+    if (diff > SWIPE_THRESHOLD_PX) goPrev()
+    else if (diff < -SWIPE_THRESHOLD_PX) goNext()
+    touchStartX.current = null
+  }
+
+  const picked = HOOKS[index]
+
+  return (
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       
         <a href={`https://search.naver.com/search.naver?query=${encodeURIComponent(picked.name)}`}
         target="_blank"
@@ -45,5 +79,29 @@ export const HOOKS: { name: string; hook: string }[] = [
         <p className="text-base font-bold text-seafoam">{picked.name}</p>
         <p className="mt-0.5 text-sm font-medium text-ink/80">{picked.hook}</p>
       </a>
-    )
-  }
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-[11px] text-ink/40">
+          {index + 1} / {HOOKS.length}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label="이전 장소"
+            className="rounded-full p-1 text-ink/40 hover:bg-ink/5 hover:text-ink/70"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label="다음 장소"
+            className="rounded-full p-1 text-ink/40 hover:bg-ink/5 hover:text-ink/70"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
