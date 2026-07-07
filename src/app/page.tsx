@@ -82,14 +82,15 @@ export default async function Home() {
         <div className="mt-4">
           <KakaoShareButton text="강릉 FLOW 인사이트 — 도장 한 칸마다, 강릉의 다른 얼굴을 찍어가요. 익숙한 명소부터 동네 골목까지, 31곳을 채워가며 강릉을 새로 만나보세요." />
         </div>
-        <div className="mt-4">
-          <PlaceHookCard />
-        </div>
       </section>
 
-      {/* 내 진행 현황 */}
+      {/* 내 진행 현황 (훅 멘트 + 진행현황 병합 카드) */}
       <section className="px-6 pt-8 sm:px-10">
-        <ProgressCard />
+        <div className="rounded-2xl border border-seafoam/30 bg-white p-5 shadow-sm">
+          <PlaceHookCard />
+          <div className="my-4 h-px bg-ink/10" />
+          <ProgressCard />
+        </div>
       </section>
 
       {/* 이렇게 즐겨보세요 */}

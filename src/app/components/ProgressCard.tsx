@@ -57,7 +57,7 @@ function ProgressCardView({
   const percent = Math.min(100, Math.round((visited / TOTAL_PLACES) * 100))
 
   return (
-    <div className="rounded-2xl border border-seafoam/30 bg-white p-5 shadow-sm">
+    <div>
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold text-ink">내 진행 현황</p>
         <p className="text-xs text-ink/50">{totalXp} XP</p>
