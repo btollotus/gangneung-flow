@@ -6,6 +6,7 @@ import KakaoShareButton from './components/KakaoShareButton'
 import TravelAwardGallery from './components/TravelAwardGallery'
 import ProgressCard from './components/ProgressCard'
 import HowItWorksSection from './components/HowItWorksSection'
+import PlaceHookCard from './components/PlaceHookCard'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
 
@@ -90,6 +91,8 @@ export default async function Home() {
       {/* 내 진행 현황 */}
       <section className="px-6 pt-3 sm:px-10">
         <div className="rounded-2xl border border-seafoam/30 bg-white p-5 shadow-sm">
+          <PlaceHookCard />
+          <div className="my-4 h-px bg-ink/10" />
           <ProgressCard />
         </div>
       </section>
