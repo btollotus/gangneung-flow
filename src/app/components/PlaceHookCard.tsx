@@ -37,7 +37,7 @@ export const HOOKS: { name: string; hook: string }[] = [
   
     return (
       
-        href={`https://search.naver.com/search.naver?query=${encodeURIComponent(picked.name)}`}
+        <a href={`https://search.naver.com/search.naver?query=${encodeURIComponent(picked.name)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="block"
