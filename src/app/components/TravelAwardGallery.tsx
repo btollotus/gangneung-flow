@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import Link from 'next/link'
 import TravelAwardGalleryClient from './TravelAwardGalleryClient'
 
 type AwardPhoto = {
@@ -11,23 +12,36 @@ type AwardPhoto = {
   thumb_image: string
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 export default async function TravelAwardGallery() {
   const supabase = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from('travel_award_photos')
-    .select('content_id, ko_title, ko_filmst, ko_cman_nm, film_day, org_image, thumb_image')
-    .order('content_id')
-    .limit(12)
+    .select(
+      'content_id, ko_title, ko_filmst, ko_cman_nm, film_day, org_image, thumb_image',
+      { count: 'exact' }
+    )
 
   if (error) {
     console.error('전국 여행 사진관 조회 오류:', error.message)
     return null
   }
 
-  const photos = (data as AwardPhoto[] | null) ?? []
+  const allPhotos = (data as AwardPhoto[] | null) ?? []
 
-  if (photos.length === 0) return null
+  if (allPhotos.length === 0) return null
+
+  // 매번 새로고침마다 랜덤 12장만 홈 화면에 노출 (전체는 /travel-photos에서 확인)
+  const photos = shuffle(allPhotos).slice(0, 12)
 
   return (
     <section className="px-6 pt-10 sm:px-10">
@@ -40,6 +54,15 @@ export default async function TravelAwardGallery() {
       </p>
 
       <TravelAwardGalleryClient photos={photos} />
+
+      <div className="mt-4 text-right">
+        <Link
+          href="/travel-photos"
+          className="text-xs font-semibold text-coral underline-offset-2 hover:underline"
+        >
+          전체보기 ({count ?? allPhotos.length}장) →
+        </Link>
+      </div>
     </section>
   )
 }
