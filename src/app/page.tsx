@@ -131,40 +131,6 @@ export default async function Home() {
         </div>
         <NearbyRestaurantsSection />
       </section>
-      {/* 장소 미리보기 */} 
-      <section className="px-6 py-12 sm:px-10">
-      <p className="mb-6 text-xs text-ink/50">31곳 중 {previewCount}곳 미리보기</p>
-
-        <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="text-lg font-bold">동네 골목, 강릉지기 추천</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(underrated as Place[] | null ?? []).map((place) => (
-            <PlaceCard key={place.id} place={place} variant="underrated" />
-          ))}
-        </div>
-
-        <div className="mt-10 mb-4">
-        <h2 className="text-sm font-semibold text-ink/60">이미 잘 알려진 명소</h2>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {(landmarks as Place[] | null ?? []).map((place) => (
-            <PlaceCard key={place.id} place={place} variant="landmark" />
-          ))}
-        </div>
-
-        {missions && missions.length > 0 && (
-          <div className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold text-coral">특별미션</h2>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {(missions as Place[]).map((place) => (
-                <PlaceCard key={place.id} place={place} variant="mission" />
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
       <TravelAwardGallery />
 
       {/* CTA */}
