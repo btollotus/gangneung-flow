@@ -36,9 +36,8 @@ const HOOKS: { name: string; hook: string }[] = [
     const picked = HOOKS[Math.floor(Math.random() * HOOKS.length)]
   
     return (
-        <div>
-          <p className="text-xs font-semibold text-seafoam">{picked.name}</p>
-          <p className="mt-0.5 text-sm font-medium text-ink/80">{picked.hook}</p>
-        </div>
-      )
-    }
+      <span className="max-w-[110px] truncate rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-seafoam shadow-sm sm:max-w-[140px]">
+        📍 {picked.name}
+      </span>
+    )
+  }

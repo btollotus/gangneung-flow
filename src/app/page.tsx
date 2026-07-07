@@ -62,11 +62,14 @@ export default async function Home() {
     <main className="min-h-screen bg-sand text-ink">
      {/* Hero */}
      <section className="relative overflow-hidden bg-gradient-to-br from-seafoam/25 via-seafoam/5 to-sand px-6 pt-10 pb-4 text-ink sm:px-10">
-        <div className="absolute right-5 top-5 flex items-end gap-1.5 sm:right-9 sm:top-7">
+     <div className="absolute right-5 top-5 flex items-end gap-1.5 sm:right-9 sm:top-7">
           <span className="h-1.5 w-1.5 rounded-full bg-coral/25" />
           <span className="h-2 w-2 translate-y-0.5 rounded-full bg-coral/45" />
           <span className="h-2.5 w-2.5 translate-y-1 rounded-full bg-coral/70" />
           <span className="h-3.5 w-3.5 translate-y-1.5 rounded-full bg-coral" />
+        </div>
+        <div className="absolute right-5 top-11 sm:right-9 sm:top-14">
+          <PlaceHookCard />
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-coral">
           강릉 FLOW 인사이트
@@ -84,11 +87,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 내 진행 현황 (훅 멘트 + 진행현황 병합 카드) */}
-      <section className="px-6 pt-8 sm:px-10">
+      {/* 내 진행 현황 */}
+      <section className="px-6 pt-3 sm:px-10">
         <div className="rounded-2xl border border-seafoam/30 bg-white p-5 shadow-sm">
-          <PlaceHookCard />
-          <div className="my-4 h-px bg-ink/10" />
           <ProgressCard />
         </div>
       </section>
