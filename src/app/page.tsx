@@ -132,17 +132,6 @@ export default async function Home() {
         <NearbyRestaurantsSection />
       </section>
       <TravelAwardGallery />
-
-      {/* CTA */}
-      <section className="px-6 pb-16 sm:px-10">
-        <button
-          disabled
-          aria-disabled="true"
-          className="w-full cursor-not-allowed rounded-full bg-ink/10 px-6 py-4 text-sm font-semibold text-ink/40"
-        >
-          31곳 전체 보기 (탐색 지도 준비중)
-        </button>
-      </section>
     </main>
   )
 }
