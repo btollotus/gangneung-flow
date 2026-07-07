@@ -42,8 +42,4 @@ export const HOOKS: { name: string; hook: string }[] = [
         rel="noopener noreferrer"
         className="block"
       >
-        <p className="text-base font-bold text-seafoam">{picked.name}</p>
-        <p className="mt-0.5 text-sm font-medium text-ink/80">{picked.hook}</p>
-      </a>
-    )
   }
