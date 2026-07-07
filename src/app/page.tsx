@@ -4,6 +4,8 @@ import NearbyChargersSection from './components/NearbyChargersSection'
 import NearbyRestaurantsSection from './components/NearbyRestaurantsSection'
 import KakaoShareButton from './components/KakaoShareButton'
 import TravelAwardGallery from './components/TravelAwardGallery'
+import ProgressCard from './components/ProgressCard'
+import HowItWorksSection from './components/HowItWorksSection'
 
 type Tier = 'landmark' | 'underrated' | 'mission'
 
@@ -79,6 +81,17 @@ export default async function Home() {
         <div className="mt-4">
           <KakaoShareButton text="강릉 FLOW 인사이트 — 도장 한 칸마다, 강릉의 다른 얼굴을 찍어가요. 익숙한 명소부터 동네 골목까지, 31곳을 채워가며 강릉을 새로 만나보세요." />
         </div>
+      </section>
+
+      {/* 내 진행 현황 */}
+      <section className="px-6 pt-8 sm:px-10">
+        <ProgressCard />
+      </section>
+
+      {/* 이렇게 즐겨보세요 */}
+      <section className="px-6 pt-8 sm:px-10">
+        <h2 className="mb-3 text-sm font-semibold text-ink/60">이렇게 즐겨보세요</h2>
+        <HowItWorksSection />
       </section>
 
       {/* 실시간 강릉 */}
