@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Copy } from 'lucide-react'
+import { Copy, Navigation } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
@@ -308,6 +308,16 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
     }
   }
 
+  // 카카오맵 길찾기 — 앱 스킴 우선 시도, 300ms 후에도 페이지가 그대로면(=앱 미설치) 웹 길찾기로 폴백
+  const handleNavigate = (place: CheckinPlace) => {
+    window.location.href = `kakaomap://route?ep=${place.latitude},${place.longitude}&by=CAR`
+    setTimeout(() => {
+      window.location.href = `https://map.kakao.com/link/to/${encodeURIComponent(
+        place.name
+      )},${place.latitude},${place.longitude}`
+    }, 300)
+  }
+
   return (
     <>
       {errorMessage && (
@@ -351,20 +361,30 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                 )}
               </div>
 
-            <button
-              type="button"
-              disabled={!inRange || isConfirmed || confirmingId === place.id}
-              onClick={() => handleConfirm(place.id)}
-              className={
-                isConfirmed
-                  ? 'rounded-full bg-seafoam/20 px-4 py-2 text-xs font-semibold text-seafoam'
-                  : inRange
-                  ? 'rounded-full bg-coral px-4 py-2 text-xs font-semibold text-white disabled:opacity-60'
-                  : 'cursor-not-allowed rounded-full bg-ink/10 px-4 py-2 text-xs font-semibold text-ink/30'
-              }
-            >
-              {isConfirmed ? '✅ 확인됨' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
-            </button>
+              <div className="flex flex-col items-end gap-1.5">
+              <button
+                type="button"
+                disabled={!inRange || isConfirmed || confirmingId === place.id}
+                onClick={() => handleConfirm(place.id)}
+                className={
+                  isConfirmed
+                    ? 'rounded-full bg-seafoam/20 px-4 py-2 text-xs font-semibold text-seafoam'
+                    : inRange
+                    ? 'rounded-full bg-coral px-4 py-2 text-xs font-semibold text-white disabled:opacity-60'
+                    : 'cursor-not-allowed rounded-full bg-ink/10 px-4 py-2 text-xs font-semibold text-ink/30'
+                }
+              >
+                {isConfirmed ? '✅ 확인됨' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNavigate(place)}
+                aria-label="길찾기"
+                className="rounded-full bg-ink/10 p-2 text-ink/50"
+              >
+                <Navigation size={14} strokeWidth={2} />
+              </button>
+            </div>
             </div>
 
 <div className="mt-2 flex items-center gap-3">
