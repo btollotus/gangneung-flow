@@ -46,6 +46,14 @@ function haversineDistanceMeters(
   return R * c
 }
 
+// 1000m 이상은 km로 환산(소수점 1자리), 미만은 정수 m로 표시
+function formatDistance(meters: number): string {
+  if (meters >= 1000) {
+    return `${(meters / 1000).toFixed(1)}km`
+  }
+  return `${Math.round(meters)}m`
+}
+
 // 같은 충전소 안에서 상태가 동일한 충전기 유닛을 하나로 묶어 개수만 표시한다.
 // (2026-07-04: KEPCO API 전환으로 output(kW) 정보가 없어져 상태 기준으로만 그룹핑)
 function summarizeChargerUnits(units: ChargerUnit[]) {
@@ -350,9 +358,9 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                   <p className="mt-0.5 text-[11px] font-medium text-seafoam">{hook}</p>
                 )}
                 <p className="mt-0.5 text-xs text-ink/50">
-                  {inRange
-                    ? `${Math.round(place.distance)}m · 체크인 가능`
-                    : `${Math.round(place.distance)}m 더 가까이 가주세요`}
+                {inRange
+                    ? `${formatDistance(place.distance)} · 체크인 가능`
+                    : `${formatDistance(place.distance)} 더 가까이 가주세요`}
                 </p>
                 {place.address && (
                   <button
