@@ -104,7 +104,7 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
       return
     }
 
-    navigator.geolocation.getCurrentPosition(
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setLocation({
           status: 'ready',
@@ -121,6 +121,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId)
+    }
   }, [])
 
   // 충전소 조회(초기 또는 반경 확장)가 진행 중인 동안 4초마다 메시지를 순환시킨다.
