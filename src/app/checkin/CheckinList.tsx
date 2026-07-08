@@ -379,10 +379,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
               <button
                 type="button"
                 onClick={() => handleNavigate(place)}
-                aria-label="길찾기"
-                className="rounded-full bg-ink/10 p-2 text-ink/50"
+                className="flex items-center gap-1 rounded-full bg-seafoam/15 px-3 py-1.5 text-[11px] font-semibold text-seafoam"
               >
-                <Navigation size={14} strokeWidth={2} />
+                <Navigation size={12} strokeWidth={2.2} />
+                길찾기
               </button>
             </div>
             </div>
