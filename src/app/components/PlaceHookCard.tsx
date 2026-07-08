@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 
 export const HOOKS: { name: string; hook: string }[] = [
     { name: '경포해변', hook: '낮보다 밤이 더 아름다운 강릉 대표 해변' },
@@ -76,7 +76,10 @@ export default function PlaceHookCard() {
         rel="noopener noreferrer"
         className="block"
       >
-        <p className="text-base font-bold text-seafoam">{picked.name}</p>
+        <p className="flex items-center gap-1 text-base font-bold text-seafoam">
+          {picked.name}
+          <ExternalLink size={14} className="shrink-0 text-seafoam/60" />
+        </p>
         <p className="mt-0.5 text-sm font-medium text-ink/80">{picked.hook}</p>
       </a>
       <div className="mt-2 flex items-center justify-between">
