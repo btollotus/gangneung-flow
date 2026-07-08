@@ -20,6 +20,14 @@ declare global {
           }>
         }) => void
       }
+      Navi: {
+        start: (options: {
+          name: string
+          x: number
+          y: number
+          coordType: 'wgs84'
+        }) => void
+      }
     }
   }
 }

@@ -308,14 +308,19 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
     }
   }
 
-  // 카카오맵 길찾기 — 앱 스킴 우선 시도, 300ms 후에도 페이지가 그대로면(=앱 미설치) 웹 길찾기로 폴백
+  // 카카오내비 실행 — Kakao JS SDK의 Navi.start() 호출 (KakaoSdk.tsx에서 이미 전역 초기화됨)
+  // 주의: 카카오내비 앱 미설치 시 SDK가 자체적으로 앱스토어 설치 페이지로 이동시킴 (웹 폴백 없음, 최신 SDK 정책)
   const handleNavigate = (place: CheckinPlace) => {
-    window.location.href = `kakaomap://route?ep=${place.latitude},${place.longitude}&by=CAR`
-    setTimeout(() => {
-      window.location.href = `https://map.kakao.com/link/to/${encodeURIComponent(
-        place.name
-      )},${place.latitude},${place.longitude}`
-    }, 300)
+    if (typeof window === 'undefined' || !window.Kakao || !window.Kakao.isInitialized()) {
+      console.error('Kakao SDK가 아직 로드되지 않았습니다')
+      return
+    }
+    window.Kakao.Navi.start({
+      name: place.name,
+      x: place.longitude,
+      y: place.latitude,
+      coordType: 'wgs84',
+    })
   }
 
   return (
@@ -382,7 +387,7 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                 className="flex items-center gap-1 rounded-full bg-seafoam/15 px-3 py-1.5 text-[11px] font-semibold text-seafoam"
               >
                 <Navigation size={12} strokeWidth={2.2} />
-                길찾기
+                카카오네비
               </button>
             </div>
             </div>
