@@ -73,16 +73,15 @@ export default async function Home() {
             className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-seafoam no-underline shadow-sm"
           />
         </div>
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-coral">
-          강릉 FLOW 인사이트
-        </p>
         <h1 className="mt-3 max-w-md text-2xl font-bold leading-tight sm:text-3xl">
           도장 한 칸마다,
           <br />
           강릉의 다른 얼굴을 찍어가요
         </h1>
         <p className="mt-3 max-w-sm text-sm text-ink/70">
-          익숙한 명소부터 동네 골목까지 — 31곳을 채워가며 강릉을 새로 만나보세요.
+          익숙한 명소부터 동네 골목까지 —
+          <br />
+          31곳을 채워가며 강릉을 새로 만나보세요.
         </p>
       </section>
 
