@@ -16,6 +16,31 @@ export type CheckinPlace = {
 
 const SELECT_FIELDS = 'id, name, tier, category, base_xp, latitude, longitude, address'
 
+// 로그인한 사용자가 이미 방문확인한 장소 id 목록을 조회한다.
+// visits 테이블은 본인 행 SELECT가 RLS로 허용돼 있어 일반(anon/authenticated) 클라이언트로 조회 가능
+// (NicknameOnboarding.tsx, ProgressCard.tsx와 동일한 패턴).
+async function getMyVisitedPlaceIds(
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<string[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return []
+
+  const { data: myVisits, error } = await supabase
+    .from('visits')
+    .select('place_id')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('본인 방문 이력 조회 오류:', error.message)
+    return []
+  }
+
+  return [...new Set((myVisits ?? []).map((v) => v.place_id))]
+}
+
 // 장소별 "방문확인한 고유 사용자 수"를 집계한다.
 // visits 테이블은 본인 행만 SELECT 가능한 RLS가 걸려있어(ranking/actions.ts와 동일한 이유),
 // 전체 사용자 집계를 위해 admin 클라이언트로 RLS를 우회해서 조회한다.
@@ -46,9 +71,10 @@ async function getVisitorCountsByPlace(): Promise<Record<string, number>> {
 export default async function CheckinPage() {
   const supabase = await createClient()
 
-  const [{ data: places, error }, visitorCounts] = await Promise.all([
+  const [{ data: places, error }, visitorCounts, myVisitedPlaceIds] = await Promise.all([
     supabase.from('places').select(SELECT_FIELDS).eq('is_active', true).order('name'),
     getVisitorCountsByPlace(),
+    getMyVisitedPlaceIds(supabase),
   ])
 
   if (error) console.error('places 조회 오류 (체크인):', error.message)
@@ -66,7 +92,7 @@ export default async function CheckinPage() {
       </p>
 
       <div className="mt-6">
-      <CheckinList places={placesWithVisitorCount} />
+      <CheckinList places={placesWithVisitorCount} visitedPlaceIds={myVisitedPlaceIds} />
       </div>
     </main>
   )

@@ -82,9 +82,15 @@ function getHookForPlace(name: string): string | null {
   return HOOKS.find((h) => h.name === name)?.hook ?? null
 }
 
-export default function CheckinList({ places }: { places: CheckinPlace[] }) {
+export default function CheckinList({
+  places,
+  visitedPlaceIds,
+}: {
+  places: CheckinPlace[]
+  visitedPlaceIds: string[]
+}) {
   const [location, setLocation] = useState<LocationState>({ status: 'loading' })
-  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set())
+  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(() => new Set(visitedPlaceIds))
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -401,13 +407,13 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                 onClick={() => handleConfirm(place.id)}
                 className={
                   isConfirmed
-                    ? 'rounded-full bg-seafoam/20 px-4 py-2 text-xs font-semibold text-seafoam'
+                    ? 'rounded-full bg-seafoam/10 px-4 py-2 text-xs font-semibold text-seafoam/70'
                     : inRange
                     ? 'rounded-full bg-coral px-4 py-2 text-xs font-semibold text-white disabled:opacity-60'
                     : 'cursor-not-allowed rounded-full bg-ink/10 px-4 py-2 text-xs font-semibold text-ink/30'
                 }
               >
-                {isConfirmed ? '✅ 확인됨' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
+                {isConfirmed ? '방문완료' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
               </button>
               <button
                 type="button"
