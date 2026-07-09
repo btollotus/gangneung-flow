@@ -353,14 +353,15 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
         >
           <div className="flex items-center justify-between">
           <div>
+          <div className="flex items-baseline gap-2">
           <p className="text-sm font-semibold text-ink">{place.name}</p>
+          <span className="text-base font-bold text-coral">{formatDistance(place.distance)}</span>
+          </div>
                 {hook && (
                   <p className="mt-0.5 text-[11px] font-medium text-seafoam">{hook}</p>
                 )}
                 <p className="mt-0.5 text-xs text-ink/50">
-                {inRange
-                    ? `${formatDistance(place.distance)} · 체크인 가능`
-                    : `${formatDistance(place.distance)} 더 가까이 가주세요`}
+                {inRange ? '체크인 가능' : '더 가까이 가주세요'}
                 </p>
                 {place.address && (
                   <button
