@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Copy, Navigation } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit } from './actions'
@@ -347,8 +348,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
         const hook = getHookForPlace(place.name)
 
         return (
-          <li
+          <motion.li
           key={place.id}
+          layout
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
           className="rounded-2xl border border-ink/15 bg-white p-4"
         >
           <div className="flex items-center justify-between">
@@ -515,10 +518,10 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                   ))}
                 </div>
               )}
-            </li>
-            )
-          })}
-      </ul>
+              </motion.li>
+              )
+            })}
+        </ul>
     </>
   )
 }
