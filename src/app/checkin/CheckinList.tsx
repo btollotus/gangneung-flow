@@ -88,6 +88,12 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // 장소별 방문확인 고유 사용자 수 — SSR 시점 값(props)으로 초기화 후,
+  // 본인 체크인 성공 시에만 +1 낙관적 갱신 (전체 재집계는 다음 페이지 진입 시 반영)
+  const [visitorCounts, setVisitorCounts] = useState<Record<string, number>>(() =>
+    Object.fromEntries(places.map((place) => [place.id, place.visitorCount]))
+  )
+
   // 근처 주차장 — 카드별 펼침/캐시/로딩/에러 상태 (체크인 로직과 독립적으로 관리)
   const [expandedParkingId, setExpandedParkingId] = useState<string | null>(null)
   const [parkingCache, setParkingCache] = useState<Record<string, NearbyParkingLot[]>>({})
@@ -190,6 +196,7 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
 
     if (result.success) {
       setConfirmedIds((prev) => new Set(prev).add(placeId))
+      setVisitorCounts((prev) => ({ ...prev, [placeId]: (prev[placeId] ?? 0) + 1 }))
     } else {
       setErrorMessage(result.error)
     }
@@ -366,6 +373,11 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
                 <p className="mt-0.5 text-xs text-ink/50">
                 {inRange ? '체크인 가능' : '더 가까이 가주세요'}
                 </p>
+                {(visitorCounts[place.id] ?? 0) > 0 && (
+                  <p className="mt-0.5 text-[11px] font-medium text-ink/40">
+                    🙋 {(visitorCounts[place.id] ?? 0).toLocaleString('ko-KR')}명 방문확인
+                  </p>
+                )}
                 {place.address && (
                   <button
                     type="button"
