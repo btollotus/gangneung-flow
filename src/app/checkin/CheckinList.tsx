@@ -355,7 +355,7 @@ export default function CheckinList({ places }: { places: CheckinPlace[] }) {
           <div>
           <div className="flex items-baseline gap-2">
           <p className="text-sm font-semibold text-ink">{place.name}</p>
-          <span className="text-base font-bold text-coral">{formatDistance(place.distance)}</span>
+          <span className="text-xl font-bold text-coral">{formatDistance(place.distance)}</span>
           </div>
                 {hook && (
                   <p className="mt-0.5 text-[11px] font-medium text-seafoam">{hook}</p>
