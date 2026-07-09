@@ -54,12 +54,20 @@ export default function SplashScreen({ backgroundPhoto = null }: SplashScreenPro
         <span className="h-4 w-4 animate-splash-pop rounded-full bg-coral/80 [animation-delay:240ms]" />
         <span className="h-5 w-5 animate-splash-pop rounded-full bg-coral [animation-delay:360ms]" />
       </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/bogo-logo-light.png"
+        alt="보고"
+        className={`relative z-10 w-40 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)] transition-opacity duration-300 sm:w-48 ${
+          phase === 'dots' ? 'opacity-0' : 'opacity-100'
+        }`}
+      />
       <p
         className={`relative z-10 text-sm font-semibold uppercase tracking-[0.35em] text-sand drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)] transition-opacity duration-300 ${
           phase === 'dots' ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        강릉 FLOW 인사이트
+        보고
       </p>
 
       {backgroundPhoto && (
