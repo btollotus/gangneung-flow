@@ -93,3 +93,42 @@ export async function getMyPageData(): Promise<MyPageData | null> {
     recentVisits,
   }
 }
+
+export type UpdateNicknameResult = { success: true } | { success: false; error: string }
+
+/**
+ * 마이페이지에서 닉네임을 직접 수정한다.
+ * - 스킵으로 profiles row가 아직 없는 계정도 있으므로 upsert 사용
+ *   (RLS: "본인 프로필 수정" UPDATE 정책 + "본인 프로필 생성" INSERT 정책 모두 확인됨)
+ */
+export async function updateNickname(newNickname: string): Promise<UpdateNicknameResult> {
+  const trimmed = newNickname.trim()
+
+  if (!trimmed) {
+    return { success: false, error: '닉네임을 입력해주세요.' }
+  }
+  if (trimmed.length > 20) {
+    return { success: false, error: '닉네임은 20자 이내로 입력해주세요.' }
+  }
+
+  const supabase = await createClient()
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userData.user) {
+    return { success: false, error: '로그인이 필요해요. 새로고침 후 다시 시도해주세요.' }
+  }
+
+  const { error: upsertError } = await supabase
+    .from('profiles')
+    .upsert({ user_id: userData.user.id, nickname: trimmed }, { onConflict: 'user_id' })
+
+  if (upsertError) {
+    if (upsertError.code === '23505') {
+      return { success: false, error: '이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해주세요.' }
+    }
+    console.error('닉네임 수정 오류:', upsertError.message)
+    return { success: false, error: '저장에 실패했어요. 다시 시도해주세요.' }
+  }
+
+  return { success: true }
+}

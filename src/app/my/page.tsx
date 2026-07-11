@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getMyPageData } from './actions'
+import NicknameEditor from './NicknameEditor'
 
 const TOTAL_PLACES = 31
 
@@ -34,6 +35,9 @@ export default async function MyPage() {
           <p className="text-xs text-ink/50">
             {visitedCount} / {TOTAL_PLACES}곳 방문
           </p>
+          <div className="mt-1">
+            <NicknameEditor currentNickname={nickname} />
+          </div>
         </div>
       </div>
 
