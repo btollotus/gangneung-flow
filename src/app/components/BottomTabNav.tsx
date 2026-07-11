@@ -16,7 +16,7 @@ const TABS: Tab[] = [
   { label: '홈', href: '/', icon: Home },
   { label: '랭킹', href: '/ranking', icon: Trophy },
   { label: '체크인', href: '/checkin', icon: MapPin },
-  { label: '마이페이지', href: '/my', icon: User, disabled: true },
+  { label: '마이페이지', href: '/my', icon: User },
 ]
 
 export default function BottomTabNav() {
