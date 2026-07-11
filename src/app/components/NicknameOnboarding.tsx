@@ -89,10 +89,28 @@ export default function NicknameOnboarding() {
     setSubmitting(false)
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setSubmitting(true)
+
+    const supabase = createClient()
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+
+    if (!userError && userData.user) {
+      const fallbackNickname = `익명${userData.user.id.slice(-4)}`
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({ user_id: userData.user.id, nickname: fallbackNickname })
+
+      // 23505(닉네임 중복)는 드문 충돌이므로 무시 — 이 경우 기존과 동일하게 profile 없이 진행됨
+      if (insertError && insertError.code !== '23505') {
+        console.error('스킵 시 기본 프로필 생성 오류:', insertError.message)
+      }
+    }
+
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('nickname_skip', '1')
     }
+    setSubmitting(false)
     setNeedsNickname(false)
   }
 
