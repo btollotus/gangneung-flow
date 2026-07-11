@@ -11,13 +11,14 @@ export interface RecentVisit {
 }
 
 export interface MyPageData {
-  nickname: string
-  visitedCount: number
-  totalXp: number
-  badgeCount: number
-  weeklyRank: number | null
-  recentVisits: RecentVisit[]
-}
+    userId: string
+    nickname: string
+    visitedCount: number
+    totalXp: number
+    badgeCount: number
+    weeklyRank: number | null
+    recentVisits: RecentVisit[]
+  }
 
 interface VisitRow {
   place_id: string
@@ -83,6 +84,7 @@ export async function getMyPageData(): Promise<MyPageData | null> {
   })
 
   return {
+    userId,
     nickname: profile?.nickname ?? `익명${userId.slice(-4)}`,
     visitedCount: score?.distinct_places_visited ?? 0,
     totalXp: score?.total_xp ?? 0,

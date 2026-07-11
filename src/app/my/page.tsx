@@ -20,7 +20,7 @@ export default async function MyPage() {
     )
   }
 
-  const { nickname, visitedCount, totalXp, badgeCount, weeklyRank, recentVisits } = data
+  const { userId, nickname, visitedCount, totalXp, badgeCount, weeklyRank, recentVisits } = data
 
   return (
     <div className="px-4 py-6 pb-24">
@@ -59,6 +59,15 @@ export default async function MyPage() {
           <p className="text-xl font-bold text-ink">{weeklyRank ? `${weeklyRank}위` : '-'}</p>
         </Link>
       </div>
+
+      {/* 사진방 바로가기 */}
+      <Link
+        href={`/user/${userId}/photos`}
+        className="mb-6 flex items-center justify-between rounded-2xl bg-ink/5 px-4 py-3"
+      >
+        <span className="text-sm font-semibold text-ink">📷 내 사진방</span>
+        <span className="text-xs text-ink/40">보기 →</span>
+      </Link>
 
       {/* 최근 방문 이력 */}
       <p className="mb-2 text-sm font-semibold text-ink">최근 방문</p>
