@@ -3,6 +3,7 @@ import CctvViewer from './components/CctvViewer'
 import KakaoShareButton from './components/KakaoShareButton'
 import TravelAwardGallery from './components/TravelAwardGallery'
 import ProgressCard from './components/ProgressCard'
+import RecentVisitPhotoGallery from './components/RecentVisitPhotoGallery'
 import HowItWorksSection from './components/HowItWorksSection'
 import PlaceHookCard from './components/PlaceHookCard'
 
@@ -92,9 +93,11 @@ export default async function Home() {
           <div className="my-4 h-px bg-ink/10" />
           <ProgressCard />
         </div>
-      </section>
+        </section>
 
-      {/* 이렇게 즐겨보세요 */}
+<RecentVisitPhotoGallery />
+
+{/* 이렇게 즐겨보세요 */}
       <section className="px-6 pt-8 sm:px-10">
         <h2 className="mb-3 text-sm font-semibold text-ink/60">이렇게 즐겨보세요</h2>
         <HowItWorksSection />
