@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Copy, Navigation, MapPin } from 'lucide-react'
+import { Copy } from 'lucide-react'
+import Image from 'next/image'
 import type { CheckinPlace } from './page'
 import { confirmVisit, uploadCheckinPhoto } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
@@ -516,7 +517,7 @@ export default function CheckinList({
                   onClick={() => handleNavigate(place)}
                   className="flex items-center gap-1 whitespace-nowrap rounded-full bg-seafoam/15 px-3 py-1.5 text-[11px] font-semibold text-seafoam"
                 >
-                  <Navigation size={12} strokeWidth={2.2} />
+                  <Image src="/icons/kakao-map.png" alt="" width={14} height={14} unoptimized />
                   카카오네비
                 </button>
                 <button
@@ -524,7 +525,7 @@ export default function CheckinList({
                   onClick={() => handleNavigateTmap(place)}
                   className="flex items-center gap-1 whitespace-nowrap rounded-full bg-ink/10 px-3 py-1.5 text-[11px] font-semibold text-ink/60"
                 >
-                  <MapPin size={12} strokeWidth={2.2} />
+                  <Image src="/icons/t-map.png" alt="" width={14} height={14} unoptimized />
                   티맵
                 </button>
               </div>
