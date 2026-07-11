@@ -1,7 +1,6 @@
-'use server'
-
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { moderatePhoto } from '@/lib/photoModeration'
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024 // 8MB
 
@@ -209,16 +208,41 @@ export async function uploadCheckinPhoto(
   const { data: publicUrlData } = admin.storage.from('checkin-photos').getPublicUrl(filePath)
   const photoUrl = publicUrlData.publicUrl
 
-  const { error: insertError } = await admin.from('checkin_photos').insert({
-    user_id: userId,
-    visit_id: visit.id,
-    place_id: placeId,
-    photo_url: photoUrl,
-  })
+  const { data: insertedPhoto, error: insertError } = await admin
+    .from('checkin_photos')
+    .insert({
+      user_id: userId,
+      visit_id: visit.id,
+      place_id: placeId,
+      photo_url: photoUrl,
+    })
+    .select('id')
+    .single()
 
-  if (insertError) {
-    console.error('checkin_photos insert 오류:', insertError.message)
+  if (insertError || !insertedPhoto) {
+    console.error('checkin_photos insert 오류:', insertError?.message)
     return { success: false, error: '사진 정보 저장에 실패했어요. 다시 시도해주세요.' }
+  }
+
+  // 1차 자동 검수 — 결과와 무관하게 업로드 자체는 이미 성공(사용자 플로우를 막지 않음).
+  // 애매하거나 검수 자체가 실패해도 auto_approved로 처리하지 않고 flagged로 fail-safe.
+  try {
+    const moderation = await moderatePhoto(buffer.toString('base64'), file.type)
+
+    const { error: moderationUpdateError } = await admin
+      .from('checkin_photos')
+      .update({
+        moderation_status: moderation.status,
+        moderation_reason: moderation.reason,
+        is_blurred: moderation.status !== 'auto_approved',
+      })
+      .eq('id', insertedPhoto.id)
+
+    if (moderationUpdateError) {
+      console.error('자동 검수 결과 저장 오류:', moderationUpdateError.message)
+    }
+  } catch (e) {
+    console.error('자동 검수 처리 중 예외 (업로드 자체는 성공):', e instanceof Error ? e.message : e)
   }
 
   return { success: true, photoUrl }
