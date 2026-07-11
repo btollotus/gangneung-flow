@@ -41,6 +41,31 @@ async function getMyVisitedPlaceIds(
   return [...new Set((myVisits ?? []).map((v) => v.place_id))]
 }
 
+// 로그인한 사용자가 이미 인증사진을 등록한 장소 id 목록을 조회한다.
+// checkin_photos는 SELECT가 로그인 사용자 전체에게 허용되어 있지만(사진방 열람용),
+// 여기서는 본인 것만 필터링해서 "이미 등록됨" 배지 판단에 사용한다.
+async function getMyPhotoPlaceIds(
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<string[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return []
+
+  const { data: myPhotos, error } = await supabase
+    .from('checkin_photos')
+    .select('place_id')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('본인 인증사진 등록 이력 조회 오류:', error.message)
+    return []
+  }
+
+  return [...new Set((myPhotos ?? []).map((p) => p.place_id))]
+}
+
 // 장소별 "방문확인한 고유 사용자 수"를 집계한다.
 // visits 테이블은 본인 행만 SELECT 가능한 RLS가 걸려있어(ranking/actions.ts와 동일한 이유),
 // 전체 사용자 집계를 위해 admin 클라이언트로 RLS를 우회해서 조회한다.
@@ -71,11 +96,13 @@ async function getVisitorCountsByPlace(): Promise<Record<string, number>> {
 export default async function CheckinPage() {
   const supabase = await createClient()
 
-  const [{ data: places, error }, visitorCounts, myVisitedPlaceIds] = await Promise.all([
-    supabase.from('places').select(SELECT_FIELDS).eq('is_active', true).order('name'),
-    getVisitorCountsByPlace(),
-    getMyVisitedPlaceIds(supabase),
-  ])
+  const [{ data: places, error }, visitorCounts, myVisitedPlaceIds, myPhotoPlaceIds] =
+    await Promise.all([
+      supabase.from('places').select(SELECT_FIELDS).eq('is_active', true).order('name'),
+      getVisitorCountsByPlace(),
+      getMyVisitedPlaceIds(supabase),
+      getMyPhotoPlaceIds(supabase),
+    ])
 
   if (error) console.error('places 조회 오류 (체크인):', error.message)
 
@@ -92,7 +119,11 @@ export default async function CheckinPage() {
       </p>
 
       <div className="mt-6">
-      <CheckinList places={placesWithVisitorCount} visitedPlaceIds={myVisitedPlaceIds} />
+      <CheckinList
+        places={placesWithVisitorCount}
+        visitedPlaceIds={myVisitedPlaceIds}
+        photoPlaceIds={myPhotoPlaceIds}
+      />
       </div>
     </main>
   )

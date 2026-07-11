@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024 // 8MB
+
 const CHECKIN_RADIUS_METERS = 200
 
 function haversineDistanceMeters(
@@ -139,3 +141,85 @@ export async function confirmVisit(
   
     return { success: true, xpEarned }
   }
+
+type UploadPhotoResult =
+  | { success: true; photoUrl: string }
+  | { success: false; error: string }
+
+// 인증사진 업로드 — 방문확인(visits)이 이미 존재하는 장소에 대해서만 등록 가능.
+// 방문확인 직후("지금 촬영")뿐 아니라 이전 세션의 방문 건에 대해서도("나중에") 동일하게 동작하도록
+// visitId를 클라이언트에서 받지 않고 서버에서 본인의 최신 visits 기록을 직접 조회한다.
+export async function uploadCheckinPhoto(
+  placeId: string,
+  formData: FormData
+): Promise<UploadPhotoResult> {
+  const supabase = await createClient()
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userData.user) {
+    return { success: false, error: '로그인이 필요해요. 새로고침 후 다시 시도해주세요.' }
+  }
+  const userId = userData.user.id
+
+  const file = formData.get('photo')
+  if (!(file instanceof File) || file.size === 0) {
+    return { success: false, error: '사진 파일을 선택해주세요.' }
+  }
+  if (!file.type.startsWith('image/')) {
+    return { success: false, error: '이미지 파일만 업로드할 수 있어요.' }
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    return { success: false, error: '사진 용량이 너무 커요 (최대 8MB).' }
+  }
+
+  const admin = createAdminClient()
+
+  // 본인의 해당 장소 방문 기록 중 가장 최근 것을 찾는다 (방문확인 없이는 사진 등록 불가)
+  const { data: visit, error: visitError } = await admin
+    .from('visits')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('place_id', placeId)
+    .order('happened_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (visitError) {
+    console.error('사진 등록용 visit 조회 오류:', visitError.message)
+    return { success: false, error: '방문 기록 확인에 실패했어요. 다시 시도해주세요.' }
+  }
+  if (!visit) {
+    return { success: false, error: '먼저 방문확인을 완료해주세요.' }
+  }
+
+  const ext =
+    file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
+  const filePath = `${userId}/${visit.id}-${Date.now()}.${ext}`
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  const { error: uploadError } = await admin.storage
+    .from('checkin-photos')
+    .upload(filePath, buffer, { contentType: file.type, upsert: false })
+
+  if (uploadError) {
+    console.error('checkin-photos Storage 업로드 오류:', uploadError.message)
+    return { success: false, error: '사진 업로드에 실패했어요. 다시 시도해주세요.' }
+  }
+
+  const { data: publicUrlData } = admin.storage.from('checkin-photos').getPublicUrl(filePath)
+  const photoUrl = publicUrlData.publicUrl
+
+  const { error: insertError } = await admin.from('checkin_photos').insert({
+    user_id: userId,
+    visit_id: visit.id,
+    place_id: placeId,
+    photo_url: photoUrl,
+  })
+
+  if (insertError) {
+    console.error('checkin_photos insert 오류:', insertError.message)
+    return { success: false, error: '사진 정보 저장에 실패했어요. 다시 시도해주세요.' }
+  }
+
+  return { success: true, photoUrl }
+}

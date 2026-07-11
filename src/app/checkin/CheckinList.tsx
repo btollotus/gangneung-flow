@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Copy, Navigation } from 'lucide-react'
 import type { CheckinPlace } from './page'
-import { confirmVisit } from './actions'
+import { confirmVisit, uploadCheckinPhoto } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
 import { getNearbyChargers, type NearbyChargerStation, type ChargerUnit } from '@/lib/evCharger'
 import { HOOKS } from '../components/PlaceHookCard'
@@ -85,14 +85,27 @@ function getHookForPlace(name: string): string | null {
 export default function CheckinList({
   places,
   visitedPlaceIds,
+  photoPlaceIds,
 }: {
   places: CheckinPlace[]
   visitedPlaceIds: string[]
+  photoPlaceIds: string[]
 }) {
   const [location, setLocation] = useState<LocationState>({ status: 'loading' })
   const [confirmedIds, setConfirmedIds] = useState<Set<string>>(() => new Set(visitedPlaceIds))
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // 인증사진 등록 상태 — 이미 등록된 장소 id 집합, 방금 방문확인 완료 후 노출되는 등록 안내 배너,
+  // 실제 업로드 대상 장소 id(파일 선택창과 연결), 업로드 진행 중 장소 id, 업로드 관련 에러
+  const [photoRegisteredIds, setPhotoRegisteredIds] = useState<Set<string>>(
+    () => new Set(photoPlaceIds)
+  )
+  const [uploadPromptId, setUploadPromptId] = useState<string | null>(null)
+  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null)
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // 장소별 방문확인 고유 사용자 수 — SSR 시점 값(props)으로 초기화 후,
   // 본인 체크인 성공 시에만 +1 낙관적 갱신 (전체 재집계는 다음 페이지 진입 시 반영)
@@ -203,8 +216,46 @@ export default function CheckinList({
     if (result.success) {
       setConfirmedIds((prev) => new Set(prev).add(placeId))
       setVisitorCounts((prev) => ({ ...prev, [placeId]: (prev[placeId] ?? 0) + 1 }))
+      setUploadPromptId(placeId)
     } else {
       setErrorMessage(result.error)
+    }
+  }
+
+  // "지금 촬영" 또는 이미 방문확인된 카드의 "인증사진 추가" 클릭 시 파일 선택창을 연다.
+  const handleClickUploadNow = (placeId: string) => {
+    setUploadError(null)
+    setUploadTargetId(placeId)
+    fileInputRef.current?.click()
+  }
+
+  const handleDismissUploadPrompt = (placeId: string) => {
+    setUploadPromptId((prev) => (prev === placeId ? null : prev))
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const placeId = uploadTargetId
+    e.target.value = '' // 같은 파일 재선택 가능하도록 초기화
+
+    if (!file || !placeId) return
+
+    setUploadingId(placeId)
+    setUploadError(null)
+
+    const formData = new FormData()
+    formData.append('photo', file)
+
+    const result = await uploadCheckinPhoto(placeId, formData)
+
+    setUploadingId(null)
+    setUploadTargetId(null)
+
+    if (result.success) {
+      setPhotoRegisteredIds((prev) => new Set(prev).add(placeId))
+      setUploadPromptId((prev) => (prev === placeId ? null : prev))
+    } else {
+      setUploadError(result.error)
     }
   }
 
@@ -354,6 +405,17 @@ export default function CheckinList({
       {errorMessage && (
         <p className="mb-3 rounded-xl bg-coral/10 p-3 text-xs text-coral">{errorMessage}</p>
       )}
+      {uploadError && (
+        <p className="mb-3 rounded-xl bg-coral/10 p-3 text-xs text-coral">{uploadError}</p>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
       <ul className="space-y-3">
       {placesWithDistance.map((place) => {
         const inRange = place.distance <= CHECKIN_RADIUS_METERS
@@ -425,6 +487,48 @@ export default function CheckinList({
               </button>
             </div>
             </div>
+
+            {isConfirmed && (
+              <div className="mt-2">
+                {uploadPromptId === place.id && !photoRegisteredIds.has(place.id) ? (
+                  <div className="flex items-center justify-between rounded-xl bg-seafoam/10 px-3 py-2">
+                    <p className="text-[11px] font-medium text-seafoam">
+                      인증사진을 등록해보세요
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClickUploadNow(place.id)}
+                        disabled={uploadingId === place.id}
+                        className="rounded-full bg-seafoam px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-60"
+                      >
+                        {uploadingId === place.id ? '업로드 중...' : '지금 촬영'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDismissUploadPrompt(place.id)}
+                        className="text-[11px] font-medium text-ink/40"
+                      >
+                        나중에
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleClickUploadNow(place.id)}
+                    disabled={uploadingId === place.id}
+                    className="text-xs font-medium text-ink/50 underline underline-offset-2 disabled:opacity-50"
+                  >
+                    {uploadingId === place.id
+                      ? '업로드 중...'
+                      : photoRegisteredIds.has(place.id)
+                      ? '📷 인증사진 등록됨'
+                      : '📷 인증사진 추가'}
+                  </button>
+                )}
+              </div>
+            )}
 
 <div className="mt-2 flex items-center gap-3">
             <button
