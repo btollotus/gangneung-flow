@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import LikeButton from '@/app/components/LikeButton'
+import ReportButton from '@/app/components/ReportButton'
 import { useLikeState } from '@/lib/useLikeState'
+import { useReportState } from '@/lib/useReportState'
 import type { UserPhoto } from './actions'
 
 /**
@@ -14,14 +16,20 @@ import type { UserPhoto } from './actions'
  *   같은 사진에 대해 항상 같은 count/liked 값을 본다
  */
 export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
-  const [selected, setSelected] = useState<UserPhoto | null>(null)
-  const { getState, isPending, toggle } = useLikeState(photos)
+    const [selected, setSelected] = useState<UserPhoto | null>(null)
+    const { getState, isPending, toggle } = useLikeState(photos)
+    const {
+      getState: getReportState,
+      isPending: isReportPending,
+      submitReport,
+    } = useReportState(photos.map((p) => ({ id: p.id, isBlurred: p.isBlurred })))
 
   return (
     <>
       <div className="grid grid-cols-3 gap-1.5">
-        {photos.map((photo) => {
+      {photos.map((photo) => {
           const likeState = getState(photo.id)
+          const reportState = getReportState(photo.id)
           return (
             <button
               key={photo.id}
@@ -33,9 +41,26 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
               <img
                 src={photo.photoUrl}
                 alt={`${photo.placeName} 인증사진`}
-                className="aspect-square w-full object-cover"
+                className={`aspect-square w-full object-cover ${
+                  reportState.isBlurred ? 'blur-md' : ''
+                }`}
                 loading="lazy"
               />
+              {reportState.isBlurred && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <span className="rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
+                    검토중
+                  </span>
+                </div>
+              )}
+              <div className="absolute left-1 top-1">
+                <ReportButton
+                  reported={reportState.reportedByMe}
+                  pending={isReportPending(photo.id)}
+                  onReport={() => submitReport(photo.id, '')}
+                  size="sm"
+                />
+              </div>
               <div className="absolute bottom-7 right-1">
                 <LikeButton
                   liked={likeState.liked}
@@ -65,14 +90,24 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
             ✕
           </button>
 
-          <div className="flex flex-1 items-center justify-center overflow-hidden p-4">
+          <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={selected.photoUrl}
               alt={selected.placeName}
-              className="max-h-full max-w-full object-contain"
+              className={`max-h-full max-w-full object-contain ${
+                getReportState(selected.id).isBlurred ? 'blur-md' : ''
+              }`}
               onClick={(e) => e.stopPropagation()}
             />
+            {getReportState(selected.id).isBlurred && (
+              <span
+                className="absolute rounded-full bg-black/60 px-3 py-1.5 text-xs text-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                신고 접수 · 검토중인 사진이에요
+              </span>
+            )}
           </div>
 
           <div
@@ -80,13 +115,21 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-sm font-semibold">{selected.placeName}</p>
-            <LikeButton
-              liked={getState(selected.id).liked}
-              count={getState(selected.id).count}
-              pending={isPending(selected.id)}
-              onToggle={() => toggle(selected.id)}
-              size="lg"
-            />
+            <div className="flex items-center gap-2">
+              <LikeButton
+                liked={getState(selected.id).liked}
+                count={getState(selected.id).count}
+                pending={isPending(selected.id)}
+                onToggle={() => toggle(selected.id)}
+                size="lg"
+              />
+              <ReportButton
+                reported={getReportState(selected.id).reportedByMe}
+                pending={isReportPending(selected.id)}
+                onReport={() => submitReport(selected.id, '')}
+                size="lg"
+              />
+            </div>
           </div>
         </div>
       )}

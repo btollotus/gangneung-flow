@@ -4,23 +4,25 @@ import { getLikeData } from '@/lib/photoLikes'
 import RecentVisitPhotoGalleryClient from './RecentVisitPhotoGalleryClient'
 
 type PhotoRow = {
-  id: string
-  photo_url: string
-  created_at: string
-  user_id: string
-  places: { name: string } | { name: string }[] | null
-}
-
-export type RecentVisitPhoto = {
     id: string
-    photoUrl: string
-    placeName: string
-    nickname: string
-    userId: string
-    createdAt: string
-    likeCount: number
-    likedByMe: boolean
+    photo_url: string
+    created_at: string
+    user_id: string
+    is_blurred: boolean
+    places: { name: string } | { name: string }[] | null
   }
+  
+  export type RecentVisitPhoto = {
+      id: string
+      photoUrl: string
+      placeName: string
+      nickname: string
+      userId: string
+      createdAt: string
+      likeCount: number
+      likedByMe: boolean
+      isBlurred: boolean
+    }
 
 const PHOTO_LIMIT = 12
 
@@ -37,8 +39,9 @@ export default async function RecentVisitPhotoGallery() {
 
   const { data: photosRaw, error: photosError } = await supabase
     .from('checkin_photos')
-    .select('id, photo_url, created_at, user_id, places(name)')
+    .select('id, photo_url, created_at, user_id, is_blurred, places(name)')
     .eq('is_approved_for_home', true)
+    .neq('moderation_status', 'blocked')
     .order('created_at', { ascending: false })
     .limit(PHOTO_LIMIT)
 
@@ -81,6 +84,7 @@ export default async function RecentVisitPhotoGallery() {
       createdAt: r.created_at,
       likeCount: likeData?.count ?? 0,
       likedByMe: likeData?.likedByMe ?? false,
+      isBlurred: r.is_blurred,
     }
   })
 

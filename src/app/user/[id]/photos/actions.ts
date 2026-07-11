@@ -5,13 +5,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getLikeData } from '@/lib/photoLikes'
 
 export interface UserPhoto {
-  id: string
-  photoUrl: string
-  placeName: string
-  createdAt: string
-  likeCount: number
-  likedByMe: boolean
-}
+    id: string
+    photoUrl: string
+    placeName: string
+    createdAt: string
+    likeCount: number
+    likedByMe: boolean
+    isBlurred: boolean
+  }
 
 export interface UserPhotosResult {
   nickname: string | null
@@ -19,11 +20,12 @@ export interface UserPhotosResult {
 }
 
 interface PhotoRow {
-  id: string
-  photo_url: string
-  created_at: string
-  places: { name: string } | { name: string }[] | null
-}
+    id: string
+    photo_url: string
+    created_at: string
+    is_blurred: boolean
+    places: { name: string } | { name: string }[] | null
+  }
 
 /**
  * 특정 유저의 사진방(인증사진 목록)을 조회한다.
@@ -41,7 +43,7 @@ export async function getUserPhotos(targetUserId: string): Promise<UserPhotosRes
       admin.from('profiles').select('nickname').eq('user_id', targetUserId).maybeSingle(),
       supabase
         .from('checkin_photos')
-        .select('id, photo_url, created_at, places(name)')
+        .select('id, photo_url, created_at, is_blurred, places(name)')
         .eq('user_id', targetUserId)
         .order('created_at', { ascending: false }),
     ])
@@ -62,6 +64,7 @@ export async function getUserPhotos(targetUserId: string): Promise<UserPhotosRes
         createdAt: p.created_at,
         likeCount: likeData?.count ?? 0,
         likedByMe: likeData?.likedByMe ?? false,
+        isBlurred: p.is_blurred,
       }
     })
   

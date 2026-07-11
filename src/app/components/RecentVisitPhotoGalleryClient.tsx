@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import LikeButton from './LikeButton'
+import ReportButton from './ReportButton'
 import { useLikeState } from '@/lib/useLikeState'
+import { useReportState } from '@/lib/useReportState'
 import type { RecentVisitPhoto } from './RecentVisitPhotoGallery'
 
 // 방문 날짜를 KST 기준 "M/D"로 표시한다.
@@ -17,14 +19,20 @@ export default function RecentVisitPhotoGalleryClient({
 }: {
   photos: RecentVisitPhoto[]
 }) {
-  const [selected, setSelected] = useState<RecentVisitPhoto | null>(null)
-  const { getState, isPending, toggle } = useLikeState(photos)
+    const [selected, setSelected] = useState<RecentVisitPhoto | null>(null)
+    const { getState, isPending, toggle } = useLikeState(photos)
+    const {
+      getState: getReportState,
+      isPending: isReportPending,
+      submitReport,
+    } = useReportState(photos.map((p) => ({ id: p.id, isBlurred: p.isBlurred })))
 
   return (
     <>
       <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 sm:-mx-10 sm:px-10">
-        {photos.map((photo) => {
+      {photos.map((photo) => {
           const likeState = getState(photo.id)
+          const reportState = getReportState(photo.id)
           return (
             <button
               key={photo.id}
@@ -36,8 +44,23 @@ export default function RecentVisitPhotoGalleryClient({
               <img
                 src={photo.photoUrl}
                 alt={photo.placeName}
-                className="h-28 w-full object-cover"
+                className={`h-28 w-full object-cover ${reportState.isBlurred ? 'blur-md' : ''}`}
               />
+              {reportState.isBlurred && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <span className="rounded-full bg-black/60 px-2 py-1 text-[10px] text-white">
+                    신고 접수 · 검토중
+                  </span>
+                </div>
+              )}
+              <div className="absolute left-1.5 top-1.5">
+                <ReportButton
+                  reported={reportState.reportedByMe}
+                  pending={isReportPending(photo.id)}
+                  onReport={() => submitReport(photo.id, '')}
+                  size="sm"
+                />
+              </div>
               <div className="absolute right-1.5 top-1.5">
                 <LikeButton
                   liked={likeState.liked}
@@ -72,14 +95,24 @@ export default function RecentVisitPhotoGalleryClient({
             ✕
           </button>
 
-          <div className="flex flex-1 items-center justify-center overflow-hidden p-4">
+          <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={selected.photoUrl}
               alt={selected.placeName}
-              className="max-h-full max-w-full object-contain"
+              className={`max-h-full max-w-full object-contain ${
+                getReportState(selected.id).isBlurred ? 'blur-md' : ''
+              }`}
               onClick={(e) => e.stopPropagation()}
             />
+            {getReportState(selected.id).isBlurred && (
+              <span
+                className="absolute rounded-full bg-black/60 px-3 py-1.5 text-xs text-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                신고 접수 · 검토중인 사진이에요
+              </span>
+            )}
           </div>
 
           <div
@@ -88,12 +121,18 @@ export default function RecentVisitPhotoGalleryClient({
           >
             <p className="text-sm font-semibold">{selected.placeName}</p>
             <p className="mt-1 text-xs text-sand/70">{formatVisitDate(selected.createdAt)} 방문</p>
-            <div className="mt-3 flex items-center justify-center">
+            <div className="mt-3 flex items-center justify-center gap-2">
               <LikeButton
                 liked={getState(selected.id).liked}
                 count={getState(selected.id).count}
                 pending={isPending(selected.id)}
                 onToggle={() => toggle(selected.id)}
+                size="lg"
+              />
+              <ReportButton
+                reported={getReportState(selected.id).reportedByMe}
+                pending={isReportPending(selected.id)}
+                onReport={() => submitReport(selected.id, '')}
                 size="lg"
               />
             </div>
