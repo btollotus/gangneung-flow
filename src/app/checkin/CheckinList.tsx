@@ -246,16 +246,25 @@ export default function CheckinList({
     const formData = new FormData()
     formData.append('photo', file)
 
-    const result = await uploadCheckinPhoto(placeId, formData)
+    // 서버 액션 호출이 예외를 던지는 경우(네트워크 오류, 요청 크기 초과 등)에도
+    // "업로드 중..." 상태가 영구히 남지 않도록 반드시 finally에서 초기화한다.
+    try {
+      const result = await uploadCheckinPhoto(placeId, formData)
 
-    setUploadingId(null)
-    setUploadTargetId(null)
-
-    if (result.success) {
-      setPhotoRegisteredIds((prev) => new Set(prev).add(placeId))
-      setUploadPromptId((prev) => (prev === placeId ? null : prev))
-    } else {
-      setUploadError(result.error)
+      if (result.success) {
+        setPhotoRegisteredIds((prev) => new Set(prev).add(placeId))
+        setUploadPromptId((prev) => (prev === placeId ? null : prev))
+      } else {
+        setUploadError(result.error)
+      }
+    } catch (err) {
+      console.error('사진 업로드 요청 실패:', err)
+      setUploadError(
+        '사진 업로드에 실패했어요. 사진 용량이 너무 크거나 네트워크가 불안정할 수 있어요. 다시 시도해주세요.'
+      )
+    } finally {
+      setUploadingId(null)
+      setUploadTargetId(null)
     }
   }
 
