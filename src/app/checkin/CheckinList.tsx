@@ -462,8 +462,8 @@ export default function CheckinList({
           transition={{ type: 'spring', stiffness: 350, damping: 30 }}
           className="rounded-2xl border border-ink/15 bg-white p-4"
         >
-          <div className="flex items-center justify-between">
-          <div>
+         <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
           <p className="text-sm font-semibold text-ink">{place.name}</p>
           <span className="text-xl font-bold text-coral">{formatDistance(place.distance)}</span>
