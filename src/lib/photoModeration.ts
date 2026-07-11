@@ -91,20 +91,27 @@ export async function moderatePhoto(
         return { status: 'flagged', reason: '자동 검수 응답 파싱 실패 - 수동 검수 필요' }
       }
 
-    if (parsed.categories?.minors_at_risk === true) {
-      return { status: 'blocked', reason: '미성년자 관련 위험 콘텐츠 감지' }
-    }
-
-    if (parsed.verdict === 'violation') {
-      return { status: 'blocked', reason: parsed.reason || '커뮤니티 가이드라인 위반' }
-    }
-    if (parsed.verdict === 'safe') {
-      return { status: 'auto_approved', reason: parsed.reason || '자동 승인' }
-    }
-
-    return { status: 'flagged', reason: parsed.reason || '자동 판단 불확실 - 수동 검수 필요' }
-  } catch (e) {
-    console.error('Claude 이미지 검수 호출 오류:', e instanceof Error ? e.message : e)
-    return { status: 'flagged', reason: '자동 검수 호출 실패 - 수동 검수 필요' }
+      if (parsed.categories?.minors_at_risk === true) {
+        return { status: 'blocked', reason: '미성년자 관련 위험 콘텐츠 감지' }
+      }
+  
+      const SAFETY_CATEGORIES = ['nudity', 'violence', 'hate', 'self_harm'] as const
+      const hasSafetyViolation = SAFETY_CATEGORIES.some(
+        (key) => parsed.categories?.[key] === true
+      )
+  
+      if (parsed.verdict === 'violation') {
+        if (hasSafetyViolation) {
+          return { status: 'blocked', reason: parsed.reason || '커뮤니티 가이드라인 위반' }
+        }
+        // 안전 카테고리 위반이 아닌 경우(예: unrelated_ad 단독)는 즉시 차단하지 않고 관리자 검수로 넘긴다
+        return { status: 'flagged', reason: parsed.reason || '주제 무관 콘텐츠 - 수동 검수 필요' }
+      }
+      if (parsed.verdict === 'safe') {
+        return { status: 'auto_approved', reason: parsed.reason || '자동 승인' }
+      }
+  
+      // 'uncertain' 또는 예상치 못한 값 — 안전하게 수동 검수로 넘김
+      return { status: 'flagged', reason: parsed.reason || '자동 판단 불확실 - 수동 검수 필요' }
   }
 }
