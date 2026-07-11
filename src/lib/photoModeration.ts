@@ -74,16 +74,22 @@ export async function moderatePhoto(
     }
 
     let parsed: {
-      verdict?: string
-      categories?: Record<string, boolean>
-      reason?: string
-    }
-    try {
-      parsed = JSON.parse(rawText.trim())
-    } catch {
-      console.error('Claude 이미지 검수 JSON 파싱 실패:', rawText.slice(0, 300))
-      return { status: 'flagged', reason: '자동 검수 응답 파싱 실패 - 수동 검수 필요' }
-    }
+        verdict?: string
+        categories?: Record<string, boolean>
+        reason?: string
+      }
+      // Claude가 순수 JSON이 아니라 ```json ... ``` 코드블록으로 감싸서 응답하는 경우가 있어 먼저 벗겨낸다
+      const cleanedText = rawText
+        .trim()
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/```\s*$/, '')
+        .trim()
+      try {
+        parsed = JSON.parse(cleanedText)
+      } catch {
+        console.error('Claude 이미지 검수 JSON 파싱 실패:', rawText.slice(0, 300))
+        return { status: 'flagged', reason: '자동 검수 응답 파싱 실패 - 수동 검수 필요' }
+      }
 
     if (parsed.categories?.minors_at_risk === true) {
       return { status: 'blocked', reason: '미성년자 관련 위험 콘텐츠 감지' }
