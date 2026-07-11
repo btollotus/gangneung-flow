@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import LikeButton from './LikeButton'
+import { useLikeState } from '@/lib/useLikeState'
 import type { RecentVisitPhoto } from './RecentVisitPhotoGallery'
 
 // 방문 날짜를 KST 기준 "M/D"로 표시한다.
@@ -17,39 +18,44 @@ export default function RecentVisitPhotoGalleryClient({
   photos: RecentVisitPhoto[]
 }) {
   const [selected, setSelected] = useState<RecentVisitPhoto | null>(null)
+  const { getState, isPending, toggle } = useLikeState(photos)
 
   return (
     <>
       <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 sm:-mx-10 sm:px-10">
-        {photos.map((photo) => (
-          <button
-            key={photo.id}
-            type="button"
-            onClick={() => setSelected(photo)}
-            className="relative w-40 shrink-0 overflow-hidden rounded-2xl border border-ink/10 bg-white text-left shadow-sm"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photo.photoUrl}
-              alt={photo.placeName}
-              className="h-28 w-full object-cover"
-            />
-            <div className="absolute right-1.5 top-1.5">
-              <LikeButton
-                photoId={photo.id}
-                initialCount={photo.likeCount}
-                initialLiked={photo.likedByMe}
-                size="sm"
+        {photos.map((photo) => {
+          const likeState = getState(photo.id)
+          return (
+            <button
+              key={photo.id}
+              type="button"
+              onClick={() => setSelected(photo)}
+              className="relative w-40 shrink-0 overflow-hidden rounded-2xl border border-ink/10 bg-white text-left shadow-sm"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photo.photoUrl}
+                alt={photo.placeName}
+                className="h-28 w-full object-cover"
               />
-            </div>
-            <div className="p-2.5">
-              <p className="truncate text-xs font-semibold">{photo.placeName}</p>
-              <p className="mt-0.5 truncate text-[10px] text-ink/50">
-                {photo.nickname} · {formatVisitDate(photo.createdAt)}
-              </p>
-            </div>
-          </button>
-        ))}
+              <div className="absolute right-1.5 top-1.5">
+                <LikeButton
+                  liked={likeState.liked}
+                  count={likeState.count}
+                  pending={isPending(photo.id)}
+                  onToggle={() => toggle(photo.id)}
+                  size="sm"
+                />
+              </div>
+              <div className="p-2.5">
+                <p className="truncate text-xs font-semibold">{photo.placeName}</p>
+                <p className="mt-0.5 truncate text-[10px] text-ink/50">
+                  {photo.nickname} · {formatVisitDate(photo.createdAt)}
+                </p>
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       {selected && (
@@ -84,9 +90,10 @@ export default function RecentVisitPhotoGalleryClient({
             <p className="mt-1 text-xs text-sand/70">{formatVisitDate(selected.createdAt)} 방문</p>
             <div className="mt-3 flex items-center justify-center">
               <LikeButton
-                photoId={selected.id}
-                initialCount={selected.likeCount}
-                initialLiked={selected.likedByMe}
+                liked={getState(selected.id).liked}
+                count={getState(selected.id).count}
+                pending={isPending(selected.id)}
+                onToggle={() => toggle(selected.id)}
                 size="lg"
               />
             </div>

@@ -1,47 +1,29 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { toggleLike } from '@/lib/photoLikes'
-
 /**
- * 인증사진 좋아요 하트 버튼.
- * - optimistic update: 클릭 즉시 UI 반영, 서버 응답 실패 시 롤백
- * - 그리드 썸네일(작은 사이즈)과 라이트박스(큰 사이즈) 양쪽에서 재사용
+ * 인증사진 좋아요 하트 버튼 (controlled).
+ * - count/liked는 부모가 관리한다 (그리드 카드와 라이트박스가 같은 사진의 상태를 공유해야 하므로,
+ *   버튼 내부에 자체 state를 두지 않는다 — 각 인스턴스가 따로 state를 가지면 같은 사진인데
+ *   카드와 라이트박스의 좋아요 개수가 서로 어긋나는 문제가 생긴다)
+ * - 클릭 시 실제 토글 로직(서버 액션 호출, optimistic update, 롤백)은 onToggle 콜백으로 부모에 위임
  */
 export default function LikeButton({
-  photoId,
-  initialCount,
-  initialLiked,
+  liked,
+  count,
+  pending = false,
+  onToggle,
   size = 'sm',
 }: {
-  photoId: string
-  initialCount: number
-  initialLiked: boolean
+  liked: boolean
+  count: number
+  pending?: boolean
+  onToggle: () => void
   size?: 'sm' | 'lg'
 }) {
-  const [count, setCount] = useState(initialCount)
-  const [liked, setLiked] = useState(initialLiked)
-  const [isPending, startTransition] = useTransition()
-
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (isPending) return
-
-    const prevCount = count
-    const prevLiked = liked
-
-    // optimistic update
-    setLiked(!prevLiked)
-    setCount(prevLiked ? prevCount - 1 : prevCount + 1)
-
-    startTransition(async () => {
-      const result = await toggleLike(photoId)
-      if (!result.success) {
-        // 실패 시 롤백 (예: 비로그인 상태)
-        setLiked(prevLiked)
-        setCount(prevCount)
-      }
-    })
+    if (pending) return
+    onToggle()
   }
 
   const isSmall = size === 'sm'
@@ -50,7 +32,7 @@ export default function LikeButton({
     <button
       type="button"
       onClick={handleClick}
-      disabled={isPending}
+      disabled={pending}
       aria-label={liked ? '좋아요 취소' : '좋아요'}
       className={
         isSmall
