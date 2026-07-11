@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { generateFallbackNickname } from "@/lib/fallbackNickname";
 
 interface RankingRow {
   user_id: string;
@@ -95,7 +96,7 @@ export async function getWeeklyRanking(): Promise<WeeklyRankingResult> {
   const ranking: RankingRow[] = Array.from(xpMap.entries())
     .map(([user_id, weekly_xp]) => ({
       user_id,
-      nickname: nicknameMap.get(user_id) ?? `익명${user_id.slice(-4)}`,
+      nickname: nicknameMap.get(user_id) ?? generateFallbackNickname(user_id),
       weekly_xp,
       rank: 0,
     }))

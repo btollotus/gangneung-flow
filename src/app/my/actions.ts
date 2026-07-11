@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getWeeklyRanking } from '@/app/ranking/actions'
+import { generateFallbackNickname } from '@/lib/fallbackNickname'
 
 export interface RecentVisit {
   placeId: string
@@ -85,7 +86,7 @@ export async function getMyPageData(): Promise<MyPageData | null> {
 
   return {
     userId,
-    nickname: profile?.nickname ?? `익명${userId.slice(-4)}`,
+    nickname: profile?.nickname ?? generateFallbackNickname(userId),
     visitedCount: score?.distinct_places_visited ?? 0,
     totalXp: score?.total_xp ?? 0,
     badgeCount: badgeCount ?? 0,

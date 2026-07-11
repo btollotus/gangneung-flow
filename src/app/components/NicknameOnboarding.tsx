@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { generateFallbackNickname } from '@/lib/fallbackNickname'
 
 export default function NicknameOnboarding() {
   const [loading, setLoading] = useState(true)
@@ -96,7 +97,7 @@ export default function NicknameOnboarding() {
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
     if (!userError && userData.user) {
-      const fallbackNickname = `익명${userData.user.id.slice(-4)}`
+      const fallbackNickname = generateFallbackNickname(userData.user.id)
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({ user_id: userData.user.id, nickname: fallbackNickname })
