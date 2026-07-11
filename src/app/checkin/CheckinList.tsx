@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Copy, Navigation } from 'lucide-react'
+import { Copy, Navigation, MapPin } from 'lucide-react'
 import type { CheckinPlace } from './page'
 import { confirmVisit, uploadCheckinPhoto } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
@@ -409,6 +409,30 @@ export default function CheckinList({
     })
   }
 
+  // 티맵 실행 — 공식 SDK 없이 URL scheme(tmap://route)을 직접 호출 (비공식이지만 iOS/Android 공통 동작 확인됨)
+  // 앱 미설치 시: visibilitychange로 앱 전환 여부를 감지, 전환이 없으면 1.5초 후 스토어로 자동 이동 (사용자 확정 사항)
+  const handleNavigateTmap = (place: CheckinPlace) => {
+    const tmapUrl = `tmap://route?goalname=${encodeURIComponent(place.name)}&goalx=${place.longitude}&goaly=${place.latitude}`
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    const storeUrl = isIOS
+      ? 'https://apps.apple.com/app/id431589174'
+      : 'https://play.google.com/store/apps/details?id=com.skt.tmap.ku'
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearTimeout(timer)
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
+    }
+    const timer = setTimeout(() => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.location.href = storeUrl
+    }, 1500)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    window.location.href = tmapUrl
+  }
+
   return (
     <>
       {errorMessage && (
@@ -486,14 +510,24 @@ export default function CheckinList({
               >
                 {isConfirmed ? '방문완료' : confirmingId === place.id ? '확인 중...' : '방문 확인'}
               </button>
-              <button
-                type="button"
-                onClick={() => handleNavigate(place)}
-                className="flex items-center gap-1 rounded-full bg-seafoam/15 px-3 py-1.5 text-[11px] font-semibold text-seafoam"
-              >
-                <Navigation size={12} strokeWidth={2.2} />
-                카카오네비
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleNavigate(place)}
+                  className="flex items-center gap-1 rounded-full bg-seafoam/15 px-3 py-1.5 text-[11px] font-semibold text-seafoam"
+                >
+                  <Navigation size={12} strokeWidth={2.2} />
+                  카카오네비
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNavigateTmap(place)}
+                  className="flex items-center gap-1 rounded-full bg-ink/10 px-3 py-1.5 text-[11px] font-semibold text-ink/60"
+                >
+                  <MapPin size={12} strokeWidth={2.2} />
+                  티맵
+                </button>
+              </div>
             </div>
             </div>
 
