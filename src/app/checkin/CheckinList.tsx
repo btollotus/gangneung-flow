@@ -515,18 +515,18 @@ export default function CheckinList({
                 <button
                   type="button"
                   onClick={() => handleNavigate(place)}
-                  className="flex items-center gap-1 whitespace-nowrap rounded-full bg-seafoam/15 px-3 py-1.5 text-[11px] font-semibold text-seafoam"
+                  aria-label="카카오네비로 길안내"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-seafoam/15"
                 >
-                  <Image src="/icons/kakao-map.png" alt="" width={14} height={14} unoptimized />
-                  카카오네비
+                  <Image src="/icons/kakao-map.png" alt="" width={16} height={16} unoptimized />
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigateTmap(place)}
-                  className="flex items-center gap-1 whitespace-nowrap rounded-full bg-ink/10 px-3 py-1.5 text-[11px] font-semibold text-ink/60"
+                  aria-label="티맵으로 길안내"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/10"
                 >
-                  <Image src="/icons/t-map.png" alt="" width={14} height={14} unoptimized />
-                  티맵
+                  <Image src="/icons/t-map.png" alt="" width={16} height={16} unoptimized />
                 </button>
               </div>
             </div>
