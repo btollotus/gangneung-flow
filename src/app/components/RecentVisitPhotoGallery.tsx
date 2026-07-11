@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getLikeData } from '@/lib/photoLikes'
 import RecentVisitPhotoGalleryClient from './RecentVisitPhotoGalleryClient'
 
 type PhotoRow = {
@@ -11,13 +12,15 @@ type PhotoRow = {
 }
 
 export type RecentVisitPhoto = {
-  id: string
-  photoUrl: string
-  placeName: string
-  nickname: string
-  userId: string
-  createdAt: string
-}
+    id: string
+    photoUrl: string
+    placeName: string
+    nickname: string
+    userId: string
+    createdAt: string
+    likeCount: number
+    likedByMe: boolean
+  }
 
 const PHOTO_LIMIT = 12
 
@@ -64,8 +67,11 @@ export default async function RecentVisitPhotoGallery() {
     ])
   )
 
+  const likeDataByPhotoId = await getLikeData(rows.map((r) => r.id))
+
   const photos: RecentVisitPhoto[] = rows.map((r) => {
     const place = Array.isArray(r.places) ? r.places[0] : r.places
+    const likeData = likeDataByPhotoId.get(r.id)
     return {
       id: r.id,
       photoUrl: r.photo_url,
@@ -73,6 +79,8 @@ export default async function RecentVisitPhotoGallery() {
       nickname: nicknameByUserId.get(r.user_id) ?? '익명',
       userId: r.user_id,
       createdAt: r.created_at,
+      likeCount: likeData?.count ?? 0,
+      likedByMe: likeData?.likedByMe ?? false,
     }
   })
 

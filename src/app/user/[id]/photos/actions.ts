@@ -2,12 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getLikeData } from '@/lib/photoLikes'
 
 export interface UserPhoto {
   id: string
   photoUrl: string
   placeName: string
   createdAt: string
+  likeCount: number
+  likedByMe: boolean
 }
 
 export interface UserPhotosResult {
@@ -46,18 +49,24 @@ export async function getUserPhotos(targetUserId: string): Promise<UserPhotosRes
   if (profileError) console.error('사진방 profiles 조회 오류:', profileError.message)
   if (photosError) console.error('사진방 checkin_photos 조회 오류:', photosError.message)
 
-  const photos: UserPhoto[] = ((photosRaw as PhotoRow[] | null) ?? []).map((p) => {
-    const place = Array.isArray(p.places) ? p.places[0] : p.places
+    const rows = (photosRaw as PhotoRow[] | null) ?? []
+    const likeDataByPhotoId = await getLikeData(rows.map((r) => r.id))
+  
+    const photos: UserPhoto[] = rows.map((p) => {
+      const place = Array.isArray(p.places) ? p.places[0] : p.places
+      const likeData = likeDataByPhotoId.get(p.id)
+      return {
+        id: p.id,
+        photoUrl: p.photo_url,
+        placeName: place?.name ?? '알 수 없는 장소',
+        createdAt: p.created_at,
+        likeCount: likeData?.count ?? 0,
+        likedByMe: likeData?.likedByMe ?? false,
+      }
+    })
+  
     return {
-      id: p.id,
-      photoUrl: p.photo_url,
-      placeName: place?.name ?? '알 수 없는 장소',
-      createdAt: p.created_at,
+      nickname: profile?.nickname ?? null,
+      photos,
     }
-  })
-
-  return {
-    nickname: profile?.nickname ?? null,
-    photos,
   }
-}

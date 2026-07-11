@@ -1,4 +1,5 @@
 import { getUserPhotos } from './actions'
+import PhotoGridClient from './PhotoGridClient'
 
 export default async function UserPhotosPage({
   params,
@@ -23,20 +24,7 @@ export default async function UserPhotosPage({
       {photos.length === 0 ? (
         <p className="text-center text-sm text-ink/40">아직 등록된 인증사진이 없어요.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-1.5">
-          {photos.map((photo) => (
-            <div key={photo.id} className="overflow-hidden rounded-lg bg-ink/5">
-              {/* eslint-disable-next-line @next/next/no-img-element -- 외부 Supabase Storage 공개 URL, next/image 도메인 설정 불필요 */}
-              <img
-                src={photo.photoUrl}
-                alt={`${photo.placeName} 인증사진`}
-                className="aspect-square w-full object-cover"
-                loading="lazy"
-              />
-              <p className="truncate px-1.5 py-1 text-[11px] text-ink/60">{photo.placeName}</p>
-            </div>
-          ))}
-        </div>
+        <PhotoGridClient photos={photos} />
       )}
     </div>
   )

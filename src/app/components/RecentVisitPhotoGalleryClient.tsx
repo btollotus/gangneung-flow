@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import LikeButton from './LikeButton'
 import type { RecentVisitPhoto } from './RecentVisitPhotoGallery'
 
 // 방문 날짜를 KST 기준 "M/D"로 표시한다.
@@ -25,7 +26,7 @@ export default function RecentVisitPhotoGalleryClient({
             key={photo.id}
             type="button"
             onClick={() => setSelected(photo)}
-            className="w-40 shrink-0 overflow-hidden rounded-2xl border border-ink/10 bg-white text-left shadow-sm"
+            className="relative w-40 shrink-0 overflow-hidden rounded-2xl border border-ink/10 bg-white text-left shadow-sm"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -33,6 +34,14 @@ export default function RecentVisitPhotoGalleryClient({
               alt={photo.placeName}
               className="h-28 w-full object-cover"
             />
+            <div className="absolute right-1.5 top-1.5">
+              <LikeButton
+                photoId={photo.id}
+                initialCount={photo.likeCount}
+                initialLiked={photo.likedByMe}
+                size="sm"
+              />
+            </div>
             <div className="p-2.5">
               <p className="truncate text-xs font-semibold">{photo.placeName}</p>
               <p className="mt-0.5 truncate text-[10px] text-ink/50">
@@ -73,6 +82,14 @@ export default function RecentVisitPhotoGalleryClient({
           >
             <p className="text-sm font-semibold">{selected.placeName}</p>
             <p className="mt-1 text-xs text-sand/70">{formatVisitDate(selected.createdAt)} 방문</p>
+            <div className="mt-3 flex items-center justify-center">
+              <LikeButton
+                photoId={selected.id}
+                initialCount={selected.likeCount}
+                initialLiked={selected.likedByMe}
+                size="lg"
+              />
+            </div>
             <Link
               href={`/user/${selected.userId}/photos`}
               onClick={(e) => e.stopPropagation()}
