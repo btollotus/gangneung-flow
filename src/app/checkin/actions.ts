@@ -1,5 +1,6 @@
 // 파일 맨 첫 줄이 반드시 이렇게 시작해야 합니다
 'use server'
+
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { moderatePhoto } from '@/lib/photoModeration'
