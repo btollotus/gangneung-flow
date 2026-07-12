@@ -167,7 +167,7 @@ export default function NicknameOnboarding() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="text-lg font-bold text-gray-900">닉네임을 정해주세요</h2>
         <p className="mt-1 text-sm text-gray-500">
