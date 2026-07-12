@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { generateFallbackNickname } from '@/lib/fallbackNickname'
 
+// 온보딩 모달에서 카카오 연결/로그인 노출 여부 (기능은 유지, 노출만 임시 차단)
+// 추후 다시 노출하려면 true로 변경
+const SHOW_KAKAO_ONBOARDING = false
+
 export default function NicknameOnboarding() {
   const [loading, setLoading] = useState(true)
   const [needsNickname, setNeedsNickname] = useState(false)
@@ -189,22 +193,26 @@ export default function NicknameOnboarding() {
           {submitting ? '저장 중...' : '시작하기'}
         </button>
 
-        <div className="mt-4 flex items-center gap-2">
-          <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs text-gray-400">또는</span>
-          <div className="h-px flex-1 bg-gray-200" />
-        </div>
+        {SHOW_KAKAO_ONBOARDING && (
+          <>
+            <div className="mt-4 flex items-center gap-2">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs text-gray-400">또는</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
 
-        <button
-          onClick={handleKakaoLink}
-          disabled={submitting}
-          className="mt-3 w-full rounded-lg bg-[#FEE500] py-2 text-sm font-semibold text-black disabled:opacity-50"
-        >
-          카카오로 계정 연결하기
-        </button>
-        <p className="mt-1.5 text-center text-[11px] text-gray-400">
-          연결하면 기기를 바꿔도 데이터가 유지돼요
-        </p>
+            <button
+              onClick={handleKakaoLink}
+              disabled={submitting}
+              className="mt-3 w-full rounded-lg bg-[#FEE500] py-2 text-sm font-semibold text-black disabled:opacity-50"
+            >
+              카카오로 계정 연결하기
+            </button>
+            <p className="mt-1.5 text-center text-[11px] text-gray-400">
+              연결하면 기기를 바꿔도 데이터가 유지돼요
+            </p>
+          </>
+        )}
 
         <button
           onClick={handleSkip}
@@ -214,13 +222,15 @@ export default function NicknameOnboarding() {
           나중에 할게요
         </button>
 
-        <button
-          onClick={handleKakaoLogin}
-          disabled={submitting}
-          className="mt-3 w-full text-center text-xs text-gray-400 underline disabled:opacity-50"
-        >
-          이미 카카오 계정이 있으신가요? 로그인하기
-        </button>
+        {SHOW_KAKAO_ONBOARDING && (
+          <button
+            onClick={handleKakaoLogin}
+            disabled={submitting}
+            className="mt-3 w-full text-center text-xs text-gray-400 underline disabled:opacity-50"
+          >
+            이미 카카오 계정이 있으신가요? 로그인하기
+          </button>
+        )}
       </div>
     </div>
   )
