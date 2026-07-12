@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import LikeButton from '@/app/components/LikeButton'
 import ReportButton from '@/app/components/ReportButton'
 import { useLikeState } from '@/lib/useLikeState'
@@ -16,7 +17,33 @@ import type { UserPhoto } from './actions'
  *   같은 사진에 대해 항상 같은 count/liked 값을 본다
  */
 export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
-    const [selected, setSelected] = useState<UserPhoto | null>(null)
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+    const selected = selectedIndex !== null ? photos[selectedIndex] : null
+    const [direction, setDirection] = useState<1 | -1>(1)
+
+    function goToPhoto(nextIndex: number, dir: 1 | -1) {
+      if (nextIndex < 0 || nextIndex >= photos.length) return
+      setDirection(dir)
+      setSelectedIndex(nextIndex)
+    }
+
+    function handlePhotoDragEnd(_event: unknown, info: PanInfo) {
+      if (selectedIndex === null) return
+      const DISTANCE_THRESHOLD = 80
+      const VELOCITY_THRESHOLD = 500
+      if (info.offset.y < -DISTANCE_THRESHOLD || info.velocity.y < -VELOCITY_THRESHOLD) {
+        goToPhoto(selectedIndex + 1, 1)
+      } else if (info.offset.y > DISTANCE_THRESHOLD || info.velocity.y > VELOCITY_THRESHOLD) {
+        goToPhoto(selectedIndex - 1, -1)
+      }
+    }
+
+    const photoVariants = {
+      enter: (dir: 1 | -1) => ({ y: dir > 0 ? 90 : -90, opacity: 0 }),
+      center: { y: 0, opacity: 1 },
+      exit: (dir: 1 | -1) => ({ y: dir > 0 ? -90 : 90, opacity: 0 }),
+    }
+
     const { getState, isPending, toggle } = useLikeState(photos)
     const {
       getState: getReportState,
@@ -27,14 +54,14 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
   return (
     <>
       <div className="grid grid-cols-3 gap-1.5">
-      {photos.map((photo) => {
+      {photos.map((photo, index) => {
           const likeState = getState(photo.id)
           const reportState = getReportState(photo.id)
           return (
             <button
               key={photo.id}
               type="button"
-              onClick={() => setSelected(photo)}
+              onClick={() => setSelectedIndex(index)}
               className="relative overflow-hidden rounded-lg bg-ink/5 text-left"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- 외부 Supabase Storage 공개 URL, next/image 도메인 설정 불필요 */}
@@ -78,36 +105,54 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
 
       {selected && (
         <div
-          className="fixed inset-0 z-[200] flex flex-col bg-black/95"
-          onClick={() => setSelected(null)}
-        >
-          <button
-            type="button"
-            aria-label="닫기"
-            onClick={() => setSelected(null)}
+        className="fixed inset-0 z-[200] flex flex-col bg-black/95"
+        onClick={() => setSelectedIndex(null)}
+      >
+        <button
+          type="button"
+          aria-label="닫기"
+          onClick={() => setSelectedIndex(null)}
             className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg text-white"
           >
             ✕
           </button>
 
           <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={selected.photoUrl}
-              alt={selected.placeName}
-              className={`max-h-full max-w-full object-contain ${
-                getReportState(selected.id).isBlurred ? 'blur-md' : ''
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            />
-            {getReportState(selected.id).isBlurred && (
-              <span
-                className="absolute rounded-full bg-black/60 px-3 py-1.5 text-xs text-white"
+            <AnimatePresence custom={direction} initial={false}>
+              <motion.div
+                key={selected.id}
+                custom={direction}
+                variants={photoVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ type: 'spring', stiffness: 170, damping: 26, mass: 0.9 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.5}
+                onDragEnd={handlePhotoDragEnd}
                 onClick={(e) => e.stopPropagation()}
+                className="absolute inset-0 flex items-center justify-center"
               >
-                신고 접수 · 검토중인 사진이에요
-              </span>
-            )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selected.photoUrl}
+                  alt={selected.placeName}
+                  draggable={false}
+                  className={`max-h-full max-w-full touch-none object-contain ${
+                    getReportState(selected.id).isBlurred ? 'blur-md' : ''
+                  }`}
+                />
+                {getReportState(selected.id).isBlurred && (
+                  <span
+                    className="absolute rounded-full bg-black/60 px-3 py-1.5 text-xs text-white"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    신고 접수 · 검토중인 사진이에요
+                  </span>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <div
