@@ -135,6 +135,29 @@ export default function NicknameOnboarding() {
     // 성공 시 카카오 인증 페이지로 자동 이동하므로 별도 처리 불필요
   }
 
+  // 재방문 사용자용 — 이미 카카오로 연결된 계정을 이 기기에서 불러올 때 사용.
+  // linkIdentity와 달리 signInWithOAuth는 이 기기의 새 익명 세션을 버리고
+  // 기존에 카카오와 연결된 영구 계정으로 전환한다.
+  const handleKakaoLogin = async () => {
+    setSubmitting(true)
+    setErrorMsg(null)
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/my`,
+      },
+    })
+
+    if (error) {
+      console.error('카카오 로그인 오류:', error.message)
+      setErrorMsg('카카오 로그인에 실패했어요. 다시 시도해주세요.')
+      setSubmitting(false)
+    }
+    // 성공 시 카카오 인증 페이지로 자동 이동하므로 별도 처리 불필요
+  }
+
   if (loading || !needsNickname) {
     return null
   }
@@ -189,6 +212,14 @@ export default function NicknameOnboarding() {
           className="mt-2 w-full text-center text-xs text-gray-400 underline disabled:opacity-50"
         >
           나중에 할게요
+        </button>
+
+        <button
+          onClick={handleKakaoLogin}
+          disabled={submitting}
+          className="mt-3 w-full text-center text-xs text-gray-400 underline disabled:opacity-50"
+        >
+          이미 카카오 계정이 있으신가요? 로그인하기
         </button>
       </div>
     </div>
