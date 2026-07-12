@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import Link from 'next/link'
 import TravelAwardGalleryClient from './TravelAwardGalleryClient'
 
 type AwardPhoto = {
@@ -24,12 +23,9 @@ function shuffle<T>(arr: T[]): T[] {
 export default async function TravelAwardGallery() {
   const supabase = createAdminClient()
 
-  const { data, error, count } = await supabase
+  const { data, error } = await supabase
     .from('travel_award_photos')
-    .select(
-      'content_id, ko_title, ko_filmst, ko_cman_nm, film_day, org_image, thumb_image',
-      { count: 'exact' }
-    )
+    .select('content_id, ko_title, ko_filmst, ko_cman_nm, film_day, org_image, thumb_image')
 
   if (error) {
     console.error('Beautiful Korea!! 조회 오류:', error.message)
@@ -54,15 +50,6 @@ export default async function TravelAwardGallery() {
       </p>
 
       <TravelAwardGalleryClient photos={photos} />
-
-      <div className="mt-4 text-right">
-        <Link
-          href="/travel-photos"
-          className="text-xs font-semibold text-coral underline-offset-2 hover:underline"
-        >
-          전체보기 ({count ?? allPhotos.length}장) →
-        </Link>
-      </div>
     </section>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 type AwardPhoto = {
   content_id: string
@@ -43,8 +44,15 @@ export default function TravelAwardGalleryClient({ photos }: { photos: AwardPhot
                 한국관광공사 · 공공누리 제1유형
               </p>
             </div>
-          </button>
+            </button>
         ))}
+        <Link
+          href="/travel-photos"
+          className="flex w-40 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border border-ink/10 bg-white/60 text-ink/50 shadow-sm"
+        >
+          <span className="text-2xl">→</span>
+          <span className="text-xs font-semibold">전체보기</span>
+        </Link>
       </div>
 
       {selected && (

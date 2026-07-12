@@ -2,35 +2,31 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import LikeButton from './LikeButton'
-import ReportButton from './ReportButton'
+import LikeButton from '@/app/components/LikeButton'
+import ReportButton from '@/app/components/ReportButton'
 import { useLikeState } from '@/lib/useLikeState'
 import { useReportState } from '@/lib/useReportState'
-import type { RecentVisitPhoto } from './RecentVisitPhotoGallery'
+import type { CheckinPhoto } from './page'
 
-// 방문 날짜를 KST 기준 "M/D"로 표시한다.
+// 방문 날짜를 KST 기준 "M/D"로 표시한다. (RecentVisitPhotoGalleryClient.tsx와 동일 로직)
 function formatVisitDate(createdAt: string): string {
   const kst = new Date(new Date(createdAt).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }))
   return `${kst.getMonth() + 1}/${kst.getDate()}`
 }
 
-export default function RecentVisitPhotoGalleryClient({
-  photos,
-}: {
-  photos: RecentVisitPhoto[]
-}) {
-    const [selected, setSelected] = useState<RecentVisitPhoto | null>(null)
-    const { getState, isPending, toggle } = useLikeState(photos)
-    const {
-      getState: getReportState,
-      isPending: isReportPending,
-      submitReport,
-    } = useReportState(photos.map((p) => ({ id: p.id, isBlurred: p.isBlurred })))
+export default function CheckinPhotoGridClient({ photos }: { photos: CheckinPhoto[] }) {
+  const [selected, setSelected] = useState<CheckinPhoto | null>(null)
+  const { getState, isPending, toggle } = useLikeState(photos)
+  const {
+    getState: getReportState,
+    isPending: isReportPending,
+    submitReport,
+  } = useReportState(photos.map((p) => ({ id: p.id, isBlurred: p.isBlurred })))
 
   return (
     <>
-      <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 sm:-mx-10 sm:px-10">
-      {photos.map((photo) => {
+      <div className="grid grid-cols-3 gap-1.5">
+        {photos.map((photo) => {
           const likeState = getState(photo.id)
           const reportState = getReportState(photo.id)
           return (
@@ -38,22 +34,25 @@ export default function RecentVisitPhotoGalleryClient({
               key={photo.id}
               type="button"
               onClick={() => setSelected(photo)}
-              className="relative w-40 shrink-0 overflow-hidden rounded-2xl border border-ink/10 bg-white text-left shadow-sm"
+              className="relative overflow-hidden rounded-lg bg-ink/5 text-left"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photo.photoUrl}
-                alt={photo.placeName}
-                className={`h-28 w-full object-cover ${reportState.isBlurred ? 'blur-md' : ''}`}
+                alt={`${photo.placeName} 인증사진`}
+                className={`aspect-square w-full object-cover ${
+                  reportState.isBlurred ? 'blur-md' : ''
+                }`}
+                loading="lazy"
               />
               {reportState.isBlurred && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <span className="rounded-full bg-black/60 px-2 py-1 text-[10px] text-white">
-                    신고 접수 · 검토중
+                  <span className="rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
+                    검토중
                   </span>
                 </div>
               )}
-              <div className="absolute left-1.5 top-1.5">
+              <div className="absolute left-1 top-1">
                 <ReportButton
                   reported={reportState.reportedByMe}
                   pending={isReportPending(photo.id)}
@@ -61,7 +60,7 @@ export default function RecentVisitPhotoGalleryClient({
                   size="sm"
                 />
               </div>
-              <div className="absolute right-1.5 top-1.5">
+              <div className="absolute bottom-7 right-1">
                 <LikeButton
                   liked={likeState.liked}
                   count={likeState.count}
@@ -70,22 +69,12 @@ export default function RecentVisitPhotoGalleryClient({
                   size="sm"
                 />
               </div>
-              <div className="p-2.5">
-                <p className="truncate text-xs font-semibold">{photo.placeName}</p>
-                <p className="mt-0.5 truncate text-[10px] text-ink/50">
-                  {photo.nickname} · {formatVisitDate(photo.createdAt)}
-                </p>
-              </div>
+              <p className="truncate px-1.5 py-1 text-[11px] text-ink/60">
+                {photo.placeName} · {photo.nickname}
+              </p>
             </button>
           )
         })}
-        <Link
-          href="/checkin-photos"
-          className="flex w-40 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border border-ink/10 bg-white/60 text-ink/50 shadow-sm"
-        >
-          <span className="text-2xl">→</span>
-          <span className="text-xs font-semibold">전체보기</span>
-        </Link>
       </div>
 
       {selected && (

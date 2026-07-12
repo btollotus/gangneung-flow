@@ -90,9 +90,8 @@ export default async function RecentVisitPhotoGallery() {
 
   return (
     <section className="px-6 pt-8 sm:px-10">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-lg font-bold">📸 방금 다녀온 사람들</h2>
-        <span className="text-xs text-ink/40">최근 인증사진</span>
+      <div className="mb-4">
+        <h2 className="text-lg font-bold">📸</h2>
       </div>
 
       <RecentVisitPhotoGalleryClient photos={photos} />
