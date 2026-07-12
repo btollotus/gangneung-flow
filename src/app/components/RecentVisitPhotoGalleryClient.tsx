@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
 import Link from 'next/link'
 import LikeButton from './LikeButton'
 import ReportButton from './ReportButton'
@@ -21,43 +22,30 @@ export default function RecentVisitPhotoGalleryClient({
 }) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const selected = selectedIndex !== null ? photos[selectedIndex] : null
-    const touchStartY = useRef<number | null>(null)
-    const isNavigatingRef = useRef(false)
+    // 1: 다음 사진(위로 스와이프, 아래에서 올라옴) / -1: 이전 사진(아래로 스와이프, 위에서 내려옴)
+    const [direction, setDirection] = useState<1 | -1>(1)
 
-    function goToPhoto(nextIndex: number) {
+    function goToPhoto(nextIndex: number, dir: 1 | -1) {
       if (nextIndex < 0 || nextIndex >= photos.length) return
+      setDirection(dir)
       setSelectedIndex(nextIndex)
     }
 
-    function handleModalTouchStart(e: React.TouchEvent) {
-      touchStartY.current = e.touches[0].clientY
+    function handlePhotoDragEnd(_event: unknown, info: PanInfo) {
+      if (selectedIndex === null) return
+      const DISTANCE_THRESHOLD = 80
+      const VELOCITY_THRESHOLD = 500
+      if (info.offset.y < -DISTANCE_THRESHOLD || info.velocity.y < -VELOCITY_THRESHOLD) {
+        goToPhoto(selectedIndex + 1, 1)
+      } else if (info.offset.y > DISTANCE_THRESHOLD || info.velocity.y > VELOCITY_THRESHOLD) {
+        goToPhoto(selectedIndex - 1, -1)
+      }
     }
 
-    function handleModalTouchEnd(e: React.TouchEvent) {
-      if (touchStartY.current === null || selectedIndex === null) return
-      const deltaY = touchStartY.current - e.changedTouches[0].clientY
-      const SWIPE_THRESHOLD = 50
-      if (deltaY > SWIPE_THRESHOLD) {
-        goToPhoto(selectedIndex + 1)
-      } else if (deltaY < -SWIPE_THRESHOLD) {
-        goToPhoto(selectedIndex - 1)
-      }
-      touchStartY.current = null
-    }
-
-    function handleModalWheel(e: React.WheelEvent) {
-      if (selectedIndex === null || isNavigatingRef.current) return
-      const WHEEL_THRESHOLD = 20
-      if (Math.abs(e.deltaY) < WHEEL_THRESHOLD) return
-      if (e.deltaY > 0) {
-        goToPhoto(selectedIndex + 1)
-      } else {
-        goToPhoto(selectedIndex - 1)
-      }
-      isNavigatingRef.current = true
-      setTimeout(() => {
-        isNavigatingRef.current = false
-      }, 400)
+    const photoVariants = {
+      enter: (dir: 1 | -1) => ({ y: dir > 0 ? 60 : -60, opacity: 0 }),
+      center: { y: 0, opacity: 1 },
+      exit: (dir: 1 | -1) => ({ y: dir > 0 ? -60 : 60, opacity: 0 }),
     }
 
     const { getState, isPending, toggle } = useLikeState(photos)
@@ -129,13 +117,10 @@ export default function RecentVisitPhotoGalleryClient({
       </div>
 
       {selected && (
-        <div
-        className="fixed inset-0 z-[200] flex flex-col bg-black/95"
-        onClick={() => setSelectedIndex(null)}
-        onTouchStart={handleModalTouchStart}
-        onTouchEnd={handleModalTouchEnd}
-        onWheel={handleModalWheel}
-      >
+       <div
+       className="fixed inset-0 z-[200] flex flex-col bg-black/95"
+       onClick={() => setSelectedIndex(null)}
+     >
         <button
           type="button"
           aria-label="닫기"
@@ -146,23 +131,41 @@ export default function RecentVisitPhotoGalleryClient({
           </button>
 
           <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={selected.photoUrl}
-              alt={selected.placeName}
-              className={`max-h-full max-w-full object-contain ${
-                getReportState(selected.id).isBlurred ? 'blur-md' : ''
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            />
-            {getReportState(selected.id).isBlurred && (
-              <span
-                className="absolute rounded-full bg-black/60 px-3 py-1.5 text-xs text-white"
+            <AnimatePresence custom={direction} initial={false}>
+              <motion.div
+                key={selected.id}
+                custom={direction}
+                variants={photoVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.7}
+                onDragEnd={handlePhotoDragEnd}
                 onClick={(e) => e.stopPropagation()}
+                className="absolute inset-0 flex items-center justify-center"
               >
-                신고 접수 · 검토중인 사진이에요
-              </span>
-            )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selected.photoUrl}
+                  alt={selected.placeName}
+                  draggable={false}
+                  className={`max-h-full max-w-full touch-none object-contain ${
+                    getReportState(selected.id).isBlurred ? 'blur-md' : ''
+                  }`}
+                />
+                {getReportState(selected.id).isBlurred && (
+                  <span
+                    className="absolute rounded-full bg-black/60 px-3 py-1.5 text-xs text-white"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    신고 접수 · 검토중인 사진이에요
+                  </span>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <div
