@@ -115,6 +115,26 @@ export default function NicknameOnboarding() {
     setNeedsNickname(false)
   }
 
+  const handleKakaoLink = async () => {
+    setSubmitting(true)
+    setErrorMsg(null)
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.linkIdentity({
+      provider: 'kakao',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/my`,
+      },
+    })
+
+    if (error) {
+      console.error('카카오 연결 오류:', error.message)
+      setErrorMsg('카카오 연결에 실패했어요. 다시 시도해주세요.')
+      setSubmitting(false)
+    }
+    // 성공 시 카카오 인증 페이지로 자동 이동하므로 별도 처리 불필요
+  }
+
   if (loading || !needsNickname) {
     return null
   }
@@ -145,6 +165,23 @@ export default function NicknameOnboarding() {
         >
           {submitting ? '저장 중...' : '시작하기'}
         </button>
+
+        <div className="mt-4 flex items-center gap-2">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400">또는</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <button
+          onClick={handleKakaoLink}
+          disabled={submitting}
+          className="mt-3 w-full rounded-lg bg-[#FEE500] py-2 text-sm font-semibold text-black disabled:opacity-50"
+        >
+          카카오로 계정 연결하기
+        </button>
+        <p className="mt-1.5 text-center text-[11px] text-gray-400">
+          연결하면 기기를 바꿔도 데이터가 유지돼요
+        </p>
 
         <button
           onClick={handleSkip}
