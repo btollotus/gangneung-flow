@@ -139,7 +139,7 @@ export default function RecentVisitPhotoGalleryClient({
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', stiffness: 260, damping: 30, mass: 0.9 }}
+                transition={{ type: 'spring', stiffness: 170, damping: 26, mass: 0.9 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={0.5}
