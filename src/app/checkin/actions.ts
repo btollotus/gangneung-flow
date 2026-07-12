@@ -238,6 +238,7 @@ export async function uploadCheckinPhoto(
         moderation_status: moderation.status,
         moderation_reason: moderation.reason,
         is_blurred: moderation.status !== 'auto_approved',
+        is_approved_for_home: moderation.status === 'auto_approved',
       })
       .eq('id', insertedPhoto.id)
 
