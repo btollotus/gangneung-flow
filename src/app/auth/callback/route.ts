@@ -3,11 +3,23 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/my'
-
-  if (code) {
+    const { searchParams, origin } = new URL(request.url)
+    const code = searchParams.get('code')
+    const errorCode = searchParams.get('error_code')
+    const next = searchParams.get('next') ?? '/my'
+  
+    // Supabase가 code 교환 이전 단계(예: 이미 연결된 identity)에서
+    // 곧바로 error_code를 붙여 리다이렉트하는 케이스
+    if (errorCode) {
+      console.error(
+        '카카오 콜백 오류(리다이렉트 파라미터):',
+        errorCode,
+        searchParams.get('error_description')
+      )
+      return NextResponse.redirect(`${origin}/auth/auth-code-error?reason=${errorCode}`)
+    }
+  
+    if (code) {
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
