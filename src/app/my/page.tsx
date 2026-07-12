@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getMyPageData } from './actions'
 import NicknameEditor from './NicknameEditor'
+import KakaoConnect from './KakaoConnect'
 
 const TOTAL_PLACES = 31
 
@@ -21,7 +22,7 @@ export default async function MyPage() {
     )
   }
 
-  const { userId, nickname, visitedCount, totalXp, badgeCount, weeklyRank, recentVisits } = data
+  const { userId, nickname, visitedCount, totalXp, badgeCount, weeklyRank, recentVisits, isKakaoLinked } = data
 
   return (
     <div className="px-4 py-6 pb-24">
@@ -38,6 +39,7 @@ export default async function MyPage() {
           <div className="mt-1">
             <NicknameEditor currentNickname={nickname} />
           </div>
+          <KakaoConnect isLinked={isKakaoLinked} />
         </div>
       </div>
 

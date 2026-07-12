@@ -19,6 +19,7 @@ export interface MyPageData {
     badgeCount: number
     weeklyRank: number | null
     recentVisits: RecentVisit[]
+    isKakaoLinked: boolean
   }
 
 interface VisitRow {
@@ -84,6 +85,8 @@ export async function getMyPageData(): Promise<MyPageData | null> {
     }
   })
 
+  const isKakaoLinked = user.identities?.some((i) => i.provider === 'kakao') ?? false
+
   return {
     userId,
     nickname: profile?.nickname ?? generateFallbackNickname(userId),
@@ -92,6 +95,7 @@ export async function getMyPageData(): Promise<MyPageData | null> {
     badgeCount: badgeCount ?? 0,
     weeklyRank: myRank?.rank ?? null,
     recentVisits,
+    isKakaoLinked,
   }
 }
 
