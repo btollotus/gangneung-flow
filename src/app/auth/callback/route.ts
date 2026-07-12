@@ -32,8 +32,10 @@ export async function GET(request: Request) {
     }
 
     console.error('카카오 콜백 세션 교환 실패:', error.message)
+    const reason = error.code ?? 'unknown'
+    return NextResponse.redirect(`${origin}/auth/auth-code-error?reason=${reason}`)
   }
 
-  // code가 없거나 교환 실패 시 에러 안내 페이지로 리다이렉트
+  // code가 없을 때(예: 사용자가 카카오 인증 화면에서 취소) 에러 안내 페이지로 리다이렉트
   return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
