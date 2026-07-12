@@ -43,10 +43,10 @@ export default function RecentVisitPhotoGalleryClient({
     }
 
     const photoVariants = {
-      enter: (dir: 1 | -1) => ({ y: dir > 0 ? 60 : -60, opacity: 0 }),
-      center: { y: 0, opacity: 1 },
-      exit: (dir: 1 | -1) => ({ y: dir > 0 ? -60 : 60, opacity: 0 }),
-    }
+        enter: (dir: 1 | -1) => ({ y: dir > 0 ? 90 : -90, opacity: 0 }),
+        center: { y: 0, opacity: 1 },
+        exit: (dir: 1 | -1) => ({ y: dir > 0 ? -90 : 90, opacity: 0 }),
+      }
 
     const { getState, isPending, toggle } = useLikeState(photos)
     const {
@@ -139,10 +139,10 @@ export default function RecentVisitPhotoGalleryClient({
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.22, ease: 'easeOut' }}
+                transition={{ type: 'spring', stiffness: 260, damping: 30, mass: 0.9 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={0.7}
+                dragElastic={0.5}
                 onDragEnd={handlePhotoDragEnd}
                 onClick={(e) => e.stopPropagation()}
                 className="absolute inset-0 flex items-center justify-center"
