@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import LikeButton from './LikeButton'
 import ReportButton from './ReportButton'
@@ -19,7 +19,47 @@ export default function RecentVisitPhotoGalleryClient({
 }: {
   photos: RecentVisitPhoto[]
 }) {
-    const [selected, setSelected] = useState<RecentVisitPhoto | null>(null)
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+    const selected = selectedIndex !== null ? photos[selectedIndex] : null
+    const touchStartY = useRef<number | null>(null)
+    const isNavigatingRef = useRef(false)
+
+    function goToPhoto(nextIndex: number) {
+      if (nextIndex < 0 || nextIndex >= photos.length) return
+      setSelectedIndex(nextIndex)
+    }
+
+    function handleModalTouchStart(e: React.TouchEvent) {
+      touchStartY.current = e.touches[0].clientY
+    }
+
+    function handleModalTouchEnd(e: React.TouchEvent) {
+      if (touchStartY.current === null || selectedIndex === null) return
+      const deltaY = touchStartY.current - e.changedTouches[0].clientY
+      const SWIPE_THRESHOLD = 50
+      if (deltaY > SWIPE_THRESHOLD) {
+        goToPhoto(selectedIndex + 1)
+      } else if (deltaY < -SWIPE_THRESHOLD) {
+        goToPhoto(selectedIndex - 1)
+      }
+      touchStartY.current = null
+    }
+
+    function handleModalWheel(e: React.WheelEvent) {
+      if (selectedIndex === null || isNavigatingRef.current) return
+      const WHEEL_THRESHOLD = 20
+      if (Math.abs(e.deltaY) < WHEEL_THRESHOLD) return
+      if (e.deltaY > 0) {
+        goToPhoto(selectedIndex + 1)
+      } else {
+        goToPhoto(selectedIndex - 1)
+      }
+      isNavigatingRef.current = true
+      setTimeout(() => {
+        isNavigatingRef.current = false
+      }, 400)
+    }
+
     const { getState, isPending, toggle } = useLikeState(photos)
     const {
       getState: getReportState,
@@ -30,14 +70,14 @@ export default function RecentVisitPhotoGalleryClient({
   return (
     <>
       <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 sm:-mx-10 sm:px-10">
-      {photos.map((photo) => {
+      {photos.map((photo, index) => {
           const likeState = getState(photo.id)
           const reportState = getReportState(photo.id)
           return (
             <button
               key={photo.id}
               type="button"
-              onClick={() => setSelected(photo)}
+              onClick={() => setSelectedIndex(index)}
               className="relative w-40 shrink-0 overflow-hidden rounded-2xl border border-ink/10 bg-white text-left shadow-sm"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -90,13 +130,16 @@ export default function RecentVisitPhotoGalleryClient({
 
       {selected && (
         <div
-          className="fixed inset-0 z-[200] flex flex-col bg-black/95"
-          onClick={() => setSelected(null)}
-        >
-          <button
-            type="button"
-            aria-label="닫기"
-            onClick={() => setSelected(null)}
+        className="fixed inset-0 z-[200] flex flex-col bg-black/95"
+        onClick={() => setSelectedIndex(null)}
+        onTouchStart={handleModalTouchStart}
+        onTouchEnd={handleModalTouchEnd}
+        onWheel={handleModalWheel}
+      >
+        <button
+          type="button"
+          aria-label="닫기"
+          onClick={() => setSelectedIndex(null)}
             className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg text-white"
           >
             ✕
