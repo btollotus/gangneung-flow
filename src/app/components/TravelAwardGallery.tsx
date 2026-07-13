@@ -42,8 +42,7 @@ export default async function TravelAwardGallery() {
   return (
     <section className="px-6 pt-10 sm:px-10">
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-lg font-bold">📷 Beautiful Korea!!</h2>
-        <span className="text-xs text-ink/40">관광공모전 수상작</span>
+        <h2 className="text-lg font-bold">관광공모전 수상작</h2>        
       </div>
       <p className="mb-4 text-xs text-ink/50">
         
