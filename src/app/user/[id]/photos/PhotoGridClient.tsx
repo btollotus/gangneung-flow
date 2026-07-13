@@ -84,7 +84,7 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
                 <ReportButton
                   reported={reportState.reportedByMe}
                   pending={isReportPending(photo.id)}
-                  onReport={() => submitReport(photo.id, '')}
+                  onReport={(reason) => submitReport(photo.id, reason)}
                   size="sm"
                 />
               </div>
@@ -171,7 +171,7 @@ export default function PhotoGridClient({ photos }: { photos: UserPhoto[] }) {
               <ReportButton
                 reported={getReportState(selected.id).reportedByMe}
                 pending={isReportPending(selected.id)}
-                onReport={() => submitReport(selected.id, '')}
+                onReport={(reason) => submitReport(selected.id, reason)}
                 size="lg"
               />
             </div>
