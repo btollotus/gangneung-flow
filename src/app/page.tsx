@@ -106,7 +106,7 @@ export default async function Home() {
       {/* 실시간 강릉 */}
       <section className="px-6 pt-10 sm:px-10">
         <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-lg font-bold">강릉 실시간</h2>
+        <h2 className="text-lg font-bold">실시간 강릉</h2>
 
           <span className="text-xs text-ink/40">실시간 CCTV</span>
         </div>
