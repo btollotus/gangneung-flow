@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { logoutAdmin, approvePhoto, blockPhoto } from './actions'
+import { logoutAdmin, approvePhoto, blockPhoto, approveExperiencePost, blockExperiencePost } from './actions'
 
 type PhotoRow = {
   id: string
@@ -130,6 +130,63 @@ function formatDate(iso: string) {
   })
 }
 
+type ExperienceQueueItem = {
+  id: string
+  photoUrl: string
+  createdAt: string
+  placeName: string
+  caption: string | null
+  nickname: string
+  moderationStatus: 'flagged' | 'blocked'
+  moderationReason: string | null
+}
+
+async function getExperienceModerationQueue(): Promise<ExperienceQueueItem[]> {
+  const admin = createAdminClient()
+
+  const { data: postsRaw, error: postsError } = await admin
+    .from('experience_posts')
+    .select('id, photo_url, caption, place_name, created_at, user_id, moderation_status, moderation_reason')
+    .in('moderation_status', ['flagged', 'blocked'])
+    .order('created_at', { ascending: false })
+
+  if (postsError) {
+    console.error('경험 게시물 검수 대기 조회 오류:', postsError.message)
+    return []
+  }
+
+  const rows = postsRaw ?? []
+  if (rows.length === 0) return []
+
+  const userIds = Array.from(new Set(rows.map((r) => r.user_id)))
+  const { data: profiles, error: profilesError } = await admin
+    .from('profiles')
+    .select('user_id, nickname')
+    .in('user_id', userIds)
+
+  if (profilesError) {
+    console.error('경험 게시물 검수 대기 닉네임 조회 오류:', profilesError.message)
+  }
+
+  const nicknameByUserId = new Map(
+    ((profiles as { user_id: string; nickname: string | null }[] | null) ?? []).map((p) => [
+      p.user_id,
+      p.nickname,
+    ])
+  )
+
+  return rows.map((r) => ({
+    id: r.id,
+    photoUrl: r.photo_url,
+    createdAt: r.created_at,
+    placeName: r.place_name,
+    caption: r.caption,
+    nickname: nicknameByUserId.get(r.user_id) ?? '익명',
+    moderationStatus: r.moderation_status,
+    moderationReason: r.moderation_reason,
+  }))
+}
+
 export default async function AdminDashboardPage({
   searchParams,
 }: {
@@ -139,6 +196,7 @@ export default async function AdminDashboardPage({
   const currentPage = Math.max(1, Number(page) || 1)
 
   const allItems = await getModerationQueue()
+  const experienceItems = await getExperienceModerationQueue()
   const totalPages = Math.max(1, Math.ceil(allItems.length / PAGE_SIZE))
   const safePage = Math.min(currentPage, totalPages)
   const pageItems = allItems.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
@@ -229,7 +287,7 @@ export default async function AdminDashboardPage({
         </div>
       )}
 
-      {totalPages > 1 && (
+{totalPages > 1 && (
         <div className="mt-8 flex items-center justify-center gap-4 text-sm">
           {safePage > 1 ? (
             <Link href={`/admin?page=${safePage - 1}`} className="underline">
@@ -250,6 +308,65 @@ export default async function AdminDashboardPage({
           )}
         </div>
       )}
+
+      <div className="mt-12 border-t border-ink/10 pt-8">
+        <h2 className="text-lg font-bold">경험 공유 게시물 검수</h2>
+        <p className="mt-2 text-sm text-ink/60">검수 대기 {experienceItems.length}건</p>
+
+        {experienceItems.length === 0 ? (
+          <p className="mt-6 text-center text-sm text-ink/40">검수 대기 중인 경험 게시물이 없어요.</p>
+        ) : (
+          <div className="mt-6 flex flex-col gap-6">
+            {experienceItems.map((item) => (
+              <div key={item.id} className="overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.photoUrl} alt={item.placeName} className="h-72 w-full object-cover" />
+
+                <div className="flex flex-col gap-3 p-4">
+                  <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_BADGE_CLASS[item.moderationStatus]}`}>
+                    {STATUS_LABEL[item.moderationStatus]}
+                  </span>
+
+                  <div className="text-sm">
+                    <p className="font-semibold">{item.placeName}</p>
+                    <p className="text-ink/50">
+                      {item.nickname} · {formatDate(item.createdAt)}
+                    </p>
+                    {item.caption && <p className="mt-1 text-ink/70">{item.caption}</p>}
+                  </div>
+
+                  {item.moderationReason && (
+                    <p className="rounded-lg bg-ink/5 px-3 py-2 text-xs text-ink/60">
+                      Claude 검수 사유: {item.moderationReason}
+                    </p>
+                  )}
+
+                  <div className="mt-1 flex gap-2">
+                    <form action={approveExperiencePost} className="flex-1">
+                      <input type="hidden" name="postId" value={item.id} />
+                      <button
+                        type="submit"
+                        className="w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white"
+                      >
+                        승인
+                      </button>
+                    </form>
+                    <form action={blockExperiencePost} className="flex-1">
+                      <input type="hidden" name="postId" value={item.id} />
+                      <button
+                        type="submit"
+                        className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white"
+                      >
+                        차단
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

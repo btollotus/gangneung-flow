@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { clearAdminSession } from '@/lib/adminAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { grantCheckinPhotoXpIfEligible } from '@/lib/checkinPhotoXp'
+import { grantCheckinPhotoXpIfEligible, grantExperiencePostXpIfEligible } from '@/lib/checkinPhotoXp'
 
 export async function logoutAdmin() {
   await clearAdminSession()
@@ -74,6 +74,52 @@ export async function blockPhoto(formData: FormData) {
   }
 
   await resolveUnresolvedReports(photoId, 'blocked')
+
+  revalidatePath('/admin')
+}
+
+export async function approveExperiencePost(formData: FormData) {
+  const postId = formData.get('postId')
+  if (typeof postId !== 'string' || !postId) {
+    console.error('approveExperiencePost: postId 누락')
+    return
+  }
+
+  const admin = createAdminClient()
+
+  const { error: updateError } = await admin
+    .from('experience_posts')
+    .update({ moderation_status: 'admin_approved', is_blurred: false })
+    .eq('id', postId)
+
+  if (updateError) {
+    console.error('experience_posts 승인 처리 오류:', updateError.message)
+    return
+  }
+
+  await grantExperiencePostXpIfEligible(admin, postId)
+
+  revalidatePath('/admin')
+}
+
+export async function blockExperiencePost(formData: FormData) {
+  const postId = formData.get('postId')
+  if (typeof postId !== 'string' || !postId) {
+    console.error('blockExperiencePost: postId 누락')
+    return
+  }
+
+  const admin = createAdminClient()
+
+  const { error: updateError } = await admin
+    .from('experience_posts')
+    .update({ moderation_status: 'blocked', is_blurred: true })
+    .eq('id', postId)
+
+  if (updateError) {
+    console.error('experience_posts 차단 처리 오류:', updateError.message)
+    return
+  }
 
   revalidatePath('/admin')
 }

@@ -4,32 +4,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { moderatePhoto } from '@/lib/photoModeration'
-import { grantCheckinPhotoXpIfEligible } from '@/lib/checkinPhotoXp'
+import { grantCheckinPhotoXpIfEligible, computeUserTotalXp } from '@/lib/checkinPhotoXp'
+import { haversineDistanceMeters, CHECKIN_RADIUS_METERS } from '@/lib/geo'
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024 // 8MB
-
-const CHECKIN_RADIUS_METERS = 200
-
-function haversineDistanceMeters(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371000
-  const toRad = (deg: number) => (deg * Math.PI) / 180
-
-  const dLat = toRad(lat2 - lat1)
-  const dLon = toRad(lon2 - lon1)
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
-  return R * c
-}
 
 type ConfirmVisitResult =
   | { success: true; xpEarned: number }
@@ -114,19 +92,10 @@ export async function confirmVisit(
     return { success: true, xpEarned } // visits 자체는 저장됐으므로 사용자에겐 성공 처리
   }
 
-  // checkin_photos에 지급된 사진 XP도 함께 합산한다 (recalcUserTotalXp와 동일한 공식).
-  // 이걸 빼면 재방문 시 total_xp가 visits 합계로만 덮어써져 기존 사진 XP가 사라진다.
-  const { data: photoXpRows, error: photoXpFetchError } = await admin
-    .from('checkin_photos')
-    .select('xp_earned')
-    .eq('user_id', userId)
-
-  if (photoXpFetchError) {
-    console.error('user_scores 재집계용 checkin_photos 조회 오류:', photoXpFetchError.message)
-  }
-
-  const photoXp = (photoXpRows ?? []).reduce((sum, p) => sum + (p.xp_earned ?? 0), 0)
-  const totalXp = allVisits.reduce((sum, v) => sum + v.xp_earned, 0) + photoXp
+  // total_xp = visits + checkin_photos + experience_posts 세 XP원의 합.
+  // 공식이 여러 곳에 흩어지면 드리프트가 생기므로 computeUserTotalXp() 하나로 통일한다.
+  const computedTotalXp = await computeUserTotalXp(admin, userId)
+  const totalXp = computedTotalXp ?? allVisits.reduce((sum, v) => sum + v.xp_earned, 0)
   const distinctPlacesVisited = new Set(allVisits.map((v) => v.place_id)).size
 
   const { error: scoreError } = await admin
