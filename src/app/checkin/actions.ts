@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { moderatePhoto } from '@/lib/photoModeration'
+import { grantCheckinPhotoXpIfEligible } from '@/lib/checkinPhotoXp'
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024 // 8MB
 
@@ -113,7 +114,19 @@ export async function confirmVisit(
     return { success: true, xpEarned } // visits 자체는 저장됐으므로 사용자에겐 성공 처리
   }
 
-  const totalXp = allVisits.reduce((sum, v) => sum + v.xp_earned, 0)
+  // checkin_photos에 지급된 사진 XP도 함께 합산한다 (recalcUserTotalXp와 동일한 공식).
+  // 이걸 빼면 재방문 시 total_xp가 visits 합계로만 덮어써져 기존 사진 XP가 사라진다.
+  const { data: photoXpRows, error: photoXpFetchError } = await admin
+    .from('checkin_photos')
+    .select('xp_earned')
+    .eq('user_id', userId)
+
+  if (photoXpFetchError) {
+    console.error('user_scores 재집계용 checkin_photos 조회 오류:', photoXpFetchError.message)
+  }
+
+  const photoXp = (photoXpRows ?? []).reduce((sum, p) => sum + (p.xp_earned ?? 0), 0)
+  const totalXp = allVisits.reduce((sum, v) => sum + v.xp_earned, 0) + photoXp
   const distinctPlacesVisited = new Set(allVisits.map((v) => v.place_id)).size
 
   const { error: scoreError } = await admin
@@ -242,10 +255,13 @@ export async function uploadCheckinPhoto(
       })
       .eq('id', insertedPhoto.id)
 
-    if (moderationUpdateError) {
-      console.error('자동 검수 결과 저장 오류:', moderationUpdateError.message)
-    }
-  } catch (e) {
+      if (moderationUpdateError) {
+        console.error('자동 검수 결과 저장 오류:', moderationUpdateError.message)
+      } else if (moderation.status === 'auto_approved') {
+        // 업로드 즉시 자동승인된 경우에만 여기서 XP 지급. flagged는 관리자 승인 시점(approvePhoto)에서 지급.
+        await grantCheckinPhotoXpIfEligible(admin, insertedPhoto.id)
+      }
+    } catch (e) {
     console.error('자동 검수 처리 중 예외 (업로드 자체는 성공):', e instanceof Error ? e.message : e)
   }
 

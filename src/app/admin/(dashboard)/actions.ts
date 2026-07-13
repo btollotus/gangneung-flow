@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { clearAdminSession } from '@/lib/adminAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { grantCheckinPhotoXpIfEligible } from '@/lib/checkinPhotoXp'
 
 export async function logoutAdmin() {
   await clearAdminSession()
@@ -42,12 +43,13 @@ export async function approvePhoto(formData: FormData) {
     .update({ moderation_status: 'admin_approved', is_blurred: false })
     .eq('id', photoId)
 
-  if (updateError) {
-    console.error('checkin_photos 승인 처리 오류:', updateError.message)
-    return
-  }
-
-  await resolveUnresolvedReports(photoId, 'restored')
+    if (updateError) {
+      console.error('checkin_photos 승인 처리 오류:', updateError.message)
+      return
+    }
+  
+    await grantCheckinPhotoXpIfEligible(admin, photoId)
+    await resolveUnresolvedReports(photoId, 'restored')
 
   revalidatePath('/admin')
 }
