@@ -130,6 +130,12 @@ function formatDate(iso: string) {
   })
 }
 
+type ExperienceReportRow = {
+  post_id: string
+  reason: string | null
+  created_at: string
+}
+
 type ExperienceQueueItem = {
   id: string
   photoUrl: string
@@ -139,6 +145,7 @@ type ExperienceQueueItem = {
   nickname: string
   moderationStatus: 'flagged' | 'blocked'
   moderationReason: string | null
+  unresolvedReasons: string[]
 }
 
 async function getExperienceModerationQueue(): Promise<ExperienceQueueItem[]> {
@@ -175,7 +182,27 @@ async function getExperienceModerationQueue(): Promise<ExperienceQueueItem[]> {
     ])
   )
 
-  return rows.map((r) => ({
+  const { data: reportsRaw, error: reportsError } = await admin
+    .from('experience_post_reports')
+    .select('post_id, reason, created_at')
+    .in(
+      'post_id',
+      rows.map((r) => r.id)
+    )
+    .is('resolved_at', null)
+
+  if (reportsError) {
+    console.error('경험 게시물 미해결 신고 조회 오류:', reportsError.message)
+  }
+
+  const reasonsByPostId = new Map<string, string[]>()
+  ;((reportsRaw as ExperienceReportRow[] | null) ?? []).forEach((report) => {
+    const list = reasonsByPostId.get(report.post_id) ?? []
+    if (report.reason) list.push(report.reason)
+    reasonsByPostId.set(report.post_id, list)
+  })
+
+  const items: ExperienceQueueItem[] = rows.map((r) => ({
     id: r.id,
     photoUrl: r.photo_url,
     createdAt: r.created_at,
@@ -184,7 +211,18 @@ async function getExperienceModerationQueue(): Promise<ExperienceQueueItem[]> {
     nickname: nicknameByUserId.get(r.user_id) ?? '익명',
     moderationStatus: r.moderation_status,
     moderationReason: r.moderation_reason,
+    unresolvedReasons: reasonsByPostId.get(r.id) ?? [],
   }))
+
+  // 신고 있는 것 우선, 그 다음 최신순 (checkin_photos 큐와 동일한 정렬 기준)
+  items.sort((a, b) => {
+    const aHasReport = a.unresolvedReasons.length > 0 ? 1 : 0
+    const bHasReport = b.unresolvedReasons.length > 0 ? 1 : 0
+    if (aHasReport !== bHasReport) return bHasReport - aHasReport
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  })
+
+  return items
 }
 
 export default async function AdminDashboardPage({
@@ -323,9 +361,16 @@ export default async function AdminDashboardPage({
                 <img src={item.photoUrl} alt={item.placeName} className="h-72 w-full object-cover" />
 
                 <div className="flex flex-col gap-3 p-4">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_BADGE_CLASS[item.moderationStatus]}`}>
                     {STATUS_LABEL[item.moderationStatus]}
                   </span>
+                  {item.unresolvedReasons.length > 0 && (
+                    <span className="rounded-full bg-red-500 px-2.5 py-1 text-xs font-semibold text-white">
+                      신고 {item.unresolvedReasons.length}건
+                    </span>
+                  )}
+                </div>
 
                   <div className="text-sm">
                     <p className="font-semibold">{item.placeName}</p>
@@ -339,6 +384,17 @@ export default async function AdminDashboardPage({
                     <p className="rounded-lg bg-ink/5 px-3 py-2 text-xs text-ink/60">
                       Claude 검수 사유: {item.moderationReason}
                     </p>
+                  )}
+
+                  {item.unresolvedReasons.length > 0 && (
+                    <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+                      <p className="font-semibold">신고 사유</p>
+                      <ul className="mt-1 list-disc pl-4">
+                        {item.unresolvedReasons.map((reason, i) => (
+                          <li key={i}>{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
 
                   <div className="mt-1 flex gap-2">

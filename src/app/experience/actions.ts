@@ -50,8 +50,10 @@ export type UploadExperiencePostInput = {
   linkedPlaceId: string | null
 }
 
+// xpEarned: auto_approved로 즉시 처리된 경우에만 실제 값(0 또는 10)을 채운다.
+// flagged 등 검수 대기로 넘어간 경우는 이 시점에 XP 지급 여부가 정해지지 않으므로 null(추후 지급 예정).
 export type UploadExperiencePostResult =
-  | { success: true }
+  | { success: true; xpEarned: number | null }
   | { success: false; error: string }
 
 export async function uploadExperiencePost(
@@ -119,6 +121,7 @@ export async function uploadExperiencePost(
   }
 
   // 1차 자동 검수 — checkin_photos와 동일한 fail-safe 정책 (애매하면 flagged로 관리자 검수).
+  let xpEarned: number | null = null
   try {
     const moderation = await moderatePhoto(buffer.toString('base64'), file.type)
 
@@ -134,11 +137,11 @@ export async function uploadExperiencePost(
     if (moderationUpdateError) {
       console.error('경험 게시물 자동 검수 결과 저장 오류:', moderationUpdateError.message)
     } else if (moderation.status === 'auto_approved') {
-      await grantExperiencePostXpIfEligible(admin, insertedPost.id)
+      xpEarned = await grantExperiencePostXpIfEligible(admin, insertedPost.id)
     }
   } catch (e) {
     console.error('경험 게시물 자동 검수 처리 중 예외 (업로드 자체는 성공):', e instanceof Error ? e.message : e)
   }
 
-  return { success: true }
+  return { success: true, xpEarned }
 }

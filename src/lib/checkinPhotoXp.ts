@@ -80,58 +80,63 @@ function getTodayRangeKST(): { start: string; end: string } {
 
 // 경험 공유 게시물 1건당 10XP, 하루(KST 기준) 최대 5건까지만 지급 (무한 도배 방지).
 // auto_approved / admin_approved 두 경로 모두 이 함수를 통해서만 지급한다.
+// 반환값은 이 게시물의 최종 xp_earned 값(0 또는 10)이다.
+// 호출부(uploadExperiencePost)가 "캡 초과로 0XP 지급"인지 구분해 안내 문구를 보여줄 때 사용한다.
+// 모든 early return도 실제 최종 xp_earned 상태(0, 컬럼 default)와 일치하도록 0을 반환한다.
 export async function grantExperiencePostXpIfEligible(
-  admin: AdminClient,
-  postId: string
-): Promise<void> {
-  const { data: post, error: postError } = await admin
-    .from('experience_posts')
-    .select('id, user_id, xp_earned')
-    .eq('id', postId)
-    .single()
-
-  if (postError || !post) {
-    console.error('경험 게시물 XP 지급용 조회 오류:', postError?.message)
-    return
+    admin: AdminClient,
+    postId: string
+  ): Promise<number> {
+    const { data: post, error: postError } = await admin
+      .from('experience_posts')
+      .select('id, user_id, xp_earned')
+      .eq('id', postId)
+      .single()
+  
+    if (postError || !post) {
+      console.error('경험 게시물 XP 지급용 조회 오류:', postError?.message)
+      return 0
+    }
+  
+    if (post.xp_earned && post.xp_earned > 0) {
+      return post.xp_earned
+    }
+  
+    const { start, end } = getTodayRangeKST()
+  
+    const { count, error: countError } = await admin
+      .from('experience_posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', post.user_id)
+      .gt('xp_earned', 0)
+      .gte('created_at', start)
+      .lt('created_at', end)
+  
+    if (countError) {
+      console.error('경험 게시물 일일 XP 카운트 조회 오류:', countError.message)
+      return 0
+    }
+  
+    const alreadyGrantedToday = count ?? 0
+    const xpToGrant =
+      alreadyGrantedToday < MAX_XP_EXPERIENCE_POSTS_PER_DAY ? XP_PER_EXPERIENCE_POST : 0
+  
+    const { error: xpUpdateError } = await admin
+      .from('experience_posts')
+      .update({ xp_earned: xpToGrant })
+      .eq('id', postId)
+  
+    if (xpUpdateError) {
+      console.error('경험 게시물 xp_earned 업데이트 오류:', xpUpdateError.message)
+      return 0
+    }
+  
+    if (xpToGrant > 0) {
+      await recalcUserTotalXp(admin, post.user_id)
+    }
+  
+    return xpToGrant
   }
-
-  if (post.xp_earned && post.xp_earned > 0) {
-    return
-  }
-
-  const { start, end } = getTodayRangeKST()
-
-  const { count, error: countError } = await admin
-    .from('experience_posts')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', post.user_id)
-    .gt('xp_earned', 0)
-    .gte('created_at', start)
-    .lt('created_at', end)
-
-  if (countError) {
-    console.error('경험 게시물 일일 XP 카운트 조회 오류:', countError.message)
-    return
-  }
-
-  const alreadyGrantedToday = count ?? 0
-  const xpToGrant =
-    alreadyGrantedToday < MAX_XP_EXPERIENCE_POSTS_PER_DAY ? XP_PER_EXPERIENCE_POST : 0
-
-  const { error: xpUpdateError } = await admin
-    .from('experience_posts')
-    .update({ xp_earned: xpToGrant })
-    .eq('id', postId)
-
-  if (xpUpdateError) {
-    console.error('경험 게시물 xp_earned 업데이트 오류:', xpUpdateError.message)
-    return
-  }
-
-  if (xpToGrant > 0) {
-    await recalcUserTotalXp(admin, post.user_id)
-  }
-}
 
 // user_scores.total_xp = visits + checkin_photos + experience_posts 세 XP원의 합.
 // 이 함수 하나로만 계산해야 드리프트가 생기지 않는다 (여러 곳에서 각자 계산 금지).

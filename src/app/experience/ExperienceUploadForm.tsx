@@ -25,6 +25,7 @@ export default function ExperienceUploadForm({ onUploaded }: { onUploaded: () =>
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -95,6 +96,7 @@ export default function ExperienceUploadForm({ onUploaded }: { onUploaded: () =>
 
   const handleSubmit = async () => {
     setError(null)
+    setNotice(null)
     const file = fileInputRef.current?.files?.[0]
     if (!file) {
       setError('사진을 선택해주세요.')
@@ -116,6 +118,11 @@ export default function ExperienceUploadForm({ onUploaded }: { onUploaded: () =>
       )
 
       if (result.success) {
+        if (result.xpEarned === 0) {
+          setNotice(
+            '게시물은 등록됐어요! 다만 오늘 XP 획득 한도(5건)를 채워서 이번 건은 XP 없이 등록됐어요.'
+          )
+        }
         setPreviewUrl(null)
         setCaption('')
         setPlaceName('')
@@ -267,6 +274,7 @@ export default function ExperienceUploadForm({ onUploaded }: { onUploaded: () =>
       />
 
       {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+      {notice && <p className="mt-2 text-xs text-coral">{notice}</p>}
 
       <button
         type="button"

@@ -11,21 +11,28 @@ export async function logoutAdmin() {
   redirect('/admin/login')
 }
 
-async function resolveUnresolvedReports(photoId: string, resolution: 'blocked' | 'restored') {
+// target 기본값은 'checkin_photo'라서 기존 호출부(approvePhoto/blockPhoto)는 변경 없이 그대로 동작한다.
+async function resolveUnresolvedReports(
+  contentId: string,
+  resolution: 'blocked' | 'restored',
+  target: 'checkin_photo' | 'experience_post' = 'checkin_photo'
+) {
   const admin = createAdminClient()
+  const reportTable = target === 'experience_post' ? 'experience_post_reports' : 'photo_reports'
+  const idColumn = target === 'experience_post' ? 'post_id' : 'photo_id'
 
   const { error } = await admin
-    .from('photo_reports')
+    .from(reportTable)
     .update({
       resolved_at: new Date().toISOString(),
       resolved_by: 'admin',
       resolution,
     })
-    .eq('photo_id', photoId)
+    .eq(idColumn, contentId)
     .is('resolved_at', null)
 
   if (error) {
-    console.error('photo_reports 해결 처리 오류:', error.message)
+    console.error(`${reportTable} 해결 처리 오류:`, error.message)
   }
 }
 
@@ -98,6 +105,7 @@ export async function approveExperiencePost(formData: FormData) {
   }
 
   await grantExperiencePostXpIfEligible(admin, postId)
+  await resolveUnresolvedReports(postId, 'restored', 'experience_post')
 
   revalidatePath('/admin')
 }
@@ -116,10 +124,12 @@ export async function blockExperiencePost(formData: FormData) {
     .update({ moderation_status: 'blocked', is_blurred: true })
     .eq('id', postId)
 
-  if (updateError) {
-    console.error('experience_posts 차단 처리 오류:', updateError.message)
-    return
+    if (updateError) {
+      console.error('experience_posts 차단 처리 오류:', updateError.message)
+      return
+    }
+  
+    await resolveUnresolvedReports(postId, 'blocked', 'experience_post')
+  
+    revalidatePath('/admin')
   }
-
-  revalidatePath('/admin')
-}
