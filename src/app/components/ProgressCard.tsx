@@ -17,20 +17,25 @@ export default async function ProgressCard() {
   const admin = createAdminClient()
 
   // visits/user_scores/badges는 본인 행만 SELECT 가능한 RLS가 걸려있어 admin 클라이언트 사용
-  const { data: score, error: scoreError } = await admin
-    .from('user_scores')
-    .select('distinct_places_visited, total_xp')
-    .eq('user_id', userId)
-    .maybeSingle()
+  // score/badgeCount는 서로 무관한 쿼리라 병렬로 조회한다 (순차 await은 불필요한 왕복 지연)
+  const [
+    { data: score, error: scoreError },
+    { count: badgeCount, error: badgeError },
+  ] = await Promise.all([
+    admin
+      .from('user_scores')
+      .select('distinct_places_visited, total_xp')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    admin
+      .from('badges')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId),
+  ])
 
   if (scoreError) {
     console.error('진행현황 카드 user_scores 조회 오류:', scoreError.message)
   }
-
-  const { count: badgeCount, error: badgeError } = await admin
-    .from('badges')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
 
   if (badgeError) {
     console.error('진행현황 카드 badges 조회 오류:', badgeError.message)

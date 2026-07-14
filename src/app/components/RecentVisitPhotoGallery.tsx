@@ -56,10 +56,13 @@ export default async function RecentVisitPhotoGallery() {
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)))
 
   const admin = createAdminClient()
-  const { data: profiles, error: profilesError } = await admin
-    .from('profiles')
-    .select('user_id, nickname')
-    .in('user_id', userIds)
+
+  // profiles 조회와 getLikeData는 둘 다 photosRaw 결과(rows)가 있어야 하지만 서로는 독립적이라
+  // 병렬로 조회한다 (순차 await은 불필요한 왕복 지연)
+  const [{ data: profiles, error: profilesError }, likeDataByPhotoId] = await Promise.all([
+    admin.from('profiles').select('user_id, nickname').in('user_id', userIds),
+    getLikeData(rows.map((r) => r.id)),
+  ])
 
   if (profilesError) console.error('방문사진 닉네임 조회 오류:', profilesError.message)
 
@@ -69,8 +72,6 @@ export default async function RecentVisitPhotoGallery() {
       p.nickname,
     ])
   )
-
-  const likeDataByPhotoId = await getLikeData(rows.map((r) => r.id))
 
   const photos: RecentVisitPhoto[] = rows.map((r) => {
     const place = Array.isArray(r.places) ? r.places[0] : r.places
