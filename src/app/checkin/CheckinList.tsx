@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Copy } from 'lucide-react'
 import Image from 'next/image'
 import type { CheckinPlace } from './page'
-import { confirmVisit, uploadCheckinPhoto } from './actions'
+import { confirmVisit, uploadCheckinPhoto, getPlaceExperiencePosts, type PlaceExperiencePost } from './actions'
 import { getNearbyParkingLots, type NearbyParkingLot } from '@/lib/parking'
 import { getNearbyChargers, type NearbyChargerStation, type ChargerUnit } from '@/lib/evCharger'
 import { HOOKS } from '../components/PlaceHookCard'
@@ -129,6 +129,12 @@ export default function CheckinList({
   const [chargerExpandLoading, setChargerExpandLoading] = useState<string | null>(null)
   // 순환 로딩 메시지 인덱스 (한 번에 카드 하나만 펼쳐지므로 단일 인덱스로 충분)
   const [chargerLoadingMsgIndex, setChargerLoadingMsgIndex] = useState(0)
+
+    // 이 장소 경험 보기 — 카드별 펼침/캐시/로딩/에러 상태 (주차장/충전소 로직과 동일한 패턴, 완전히 독립적으로 관리)
+  const [expandedExperienceId, setExpandedExperienceId] = useState<string | null>(null)
+  const [experienceCache, setExperienceCache] = useState<Record<string, PlaceExperiencePost[]>>({})
+  const [experienceLoadingId, setExperienceLoadingId] = useState<string | null>(null)
+  const [experienceErrors, setExperienceErrors] = useState<Record<string, string>>({})
 
     // 주소 복사 피드백 (장소/주차장/충전소 공용, key로 구분)
     const [copiedKey, setCopiedKey] = useState<string | null>(null)
@@ -380,6 +386,38 @@ export default function CheckinList({
       }))
     } finally {
       setChargerLoadingId(null)
+    }
+  }
+
+  const handleToggleExperience = async (place: CheckinPlace) => {
+    if (expandedExperienceId === place.id) {
+      setExpandedExperienceId(null)
+      return
+    }
+
+    setExpandedExperienceId(place.id)
+
+    // 이미 조회한 적 있으면 재호출하지 않음 (충전소/주차장과 동일한 캐시 정책)
+    if (experienceCache[place.id]) return
+
+    setExperienceLoadingId(place.id)
+    setExperienceErrors((prev) => {
+      const next = { ...prev }
+      delete next[place.id]
+      return next
+    })
+
+    try {
+      const posts = await getPlaceExperiencePosts(place.id)
+      setExperienceCache((prev) => ({ ...prev, [place.id]: posts }))
+    } catch (err) {
+      console.error('장소별 경험 게시물 조회 오류:', err)
+      setExperienceErrors((prev) => ({
+        ...prev,
+        [place.id]: '경험 게시물을 가져오지 못했어요.',
+      }))
+    } finally {
+      setExperienceLoadingId(null)
     }
   }
 
@@ -682,11 +720,57 @@ export default function CheckinList({
                       )}
                     </div>
                   ))}
+                  </div>
+                )}
+  
+                <div className="mt-2 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleExperience(place)}
+                    className="text-xs font-medium text-ink/50 underline underline-offset-2"
+                  >
+                    {expandedExperienceId === place.id ? '📸 이 장소 경험 접기' : '📸 이 장소 경험 보기'}
+                  </button>
                 </div>
-              )}
-              </motion.li>
-              )
-            })}
+  
+                {expandedExperienceId === place.id && (
+                  <div className="mt-2 space-y-2 border-t border-ink/10 pt-3">
+                    {experienceLoadingId === place.id && (
+                      <p className="text-xs text-ink/40">경험 게시물을 불러오는 중...</p>
+                    )}
+  
+                    {experienceErrors[place.id] && (
+                      <p className="text-xs text-coral">{experienceErrors[place.id]}</p>
+                    )}
+  
+                    {experienceLoadingId !== place.id &&
+                      !experienceErrors[place.id] &&
+                      experienceCache[place.id]?.length === 0 && (
+                        <p className="text-xs text-ink/40">아직 등록된 경험 게시물이 없어요.</p>
+                      )}
+  
+                    {experienceCache[place.id]?.map((post) => (
+                      <div key={post.id} className="flex gap-2 rounded-xl bg-sand/60 p-2.5">
+                        <img
+                          src={post.photoUrl}
+                          alt=""
+                          className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-medium text-ink/60">{post.nickname}</p>
+                          {post.caption && (
+                            <p className="mt-0.5 line-clamp-2 text-[11px] text-ink/50">
+                              {post.caption}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                </motion.li>
+                )
+              })}
         </ul>
     </>
   )

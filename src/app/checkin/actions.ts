@@ -236,3 +236,57 @@ export async function uploadCheckinPhoto(
 
   return { success: true, photoUrl }
 }
+
+export type PlaceExperiencePost = {
+  id: string
+  photoUrl: string
+  caption: string | null
+  nickname: string
+  createdAt: string
+}
+
+// 체크인 카드의 "이 장소 경험 보기" 토글용 — 해당 장소(linked_place_id)에 연결된 경험 게시물 중
+// 공개 노출 기준(auto_approved/admin_approved)을 만족하는 것만 조회한다. (/experience 페이지와 동일한 공개 기준)
+export async function getPlaceExperiencePosts(placeId: string): Promise<PlaceExperiencePost[]> {
+  const admin = createAdminClient()
+
+  const { data, error } = await admin
+    .from('experience_posts')
+    .select('id, photo_url, caption, created_at, user_id')
+    .eq('linked_place_id', placeId)
+    .in('moderation_status', ['auto_approved', 'admin_approved'])
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  if (error) {
+    console.error('장소별 경험 게시물 조회 오류:', error.message)
+    return []
+  }
+
+  const rows = data ?? []
+  const userIds = Array.from(new Set(rows.map((p) => p.user_id)))
+
+  const { data: profiles, error: profilesError } =
+    userIds.length > 0
+      ? await admin.from('profiles').select('user_id, nickname').in('user_id', userIds)
+      : { data: [], error: null }
+
+  if (profilesError) {
+    console.error('장소별 경험 게시물 닉네임 조회 오류:', profilesError.message)
+  }
+
+  const nicknameByUserId = new Map(
+    ((profiles as { user_id: string; nickname: string | null }[] | null) ?? []).map((p) => [
+      p.user_id,
+      p.nickname,
+    ])
+  )
+
+  return rows.map((p) => ({
+    id: p.id,
+    photoUrl: p.photo_url,
+    caption: p.caption,
+    nickname: nicknameByUserId.get(p.user_id) ?? '익명',
+    createdAt: p.created_at,
+  }))
+}
